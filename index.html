@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orient - WW2 Timeline</title>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Year Display (Top-left corner) -->
+    <div id="year-display">1933</div>
+
+    <!-- Controls (Top-right corner) -->
+    <div id="top-controls">
+        <button id="help-btn" class="control-btn" aria-label="Help">?</button>
+        <div id="language-selector">
+            <button id="language-btn" class="control-btn">SV</button>
+            <div id="language-menu" class="hidden">
+                <div class="language-option selected" data-lang="sv">Svenska</div>
+                <div class="language-option" data-lang="en">English</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map Container -->
+    <div id="map"></div>
+
+    <!-- Timeline Container -->
+    <div id="timeline-container">
+        <button id="prev-btn" class="nav-btn" aria-label="Previous event">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+
+        <div id="timeline">
+            <div id="timeline-track"></div>
+            <div id="timeline-progress"></div>
+            <div id="timeline-markers"></div>
+        </div>
+
+        <button id="next-btn" class="nav-btn" aria-label="Next event">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+    </div>
+
+
+
+    <!-- Help Overlay -->
+    <div id="help-overlay" class="hidden">
+        <div id="help-content">
+            <button id="close-help" aria-label="Close help">&times;</button>
+            <h2>Välkommen till Förintelsens Tidslinje</h2>
+            <p>Denna interaktiva tidslinje visar viktiga händelser under perioden 1933-1946, från Nazitysklands framväxt till andra världskrigets slut.</p>
+            
+            <h3>Hur du använder tidslinjen:</h3>
+            <ul>
+                <li><strong>Navigera i tiden:</strong> Använd pilknapparna längst ner eller tryck på prickarna på tidslinjen för att röra dig mellan olika tidsperioder.</li>
+                <li><strong>Utforska händelser:</strong> Händelser visas som cirklar på kartan. Hovra över dem för att se en förhandsvisning, klicka för att läsa mer.</li>
+                <li><strong>Läs kontext:</strong> Den vita rutan längst ner till höger ger historisk kontext för varje år.</li>
+                <li><strong>Tangentbordsnavigering:</strong> Använd vänster/höger piltangenter för att navigera.</li>
+            </ul>
+
+            <button id="start-exploring-btn" class="explore-btn">Utforska tidslinjen</button>
+        </div>
+    </div>
+
+    <!-- Info Textbox (Lower right corner) -->
+    <div id="info-box" class="hidden">
+        <p id="info-text"></p>
+    </div>
+
+    <!-- Event Info Panel (appears when event is selected) -->
+    <div id="event-panel" class="hidden">
+        <button id="close-panel" aria-label="Close panel">&times;</button>
+        <div id="event-content">
+            <img id="event-image" src="" alt="Event photograph">
+            <h2 id="event-title"></h2>
+            <p id="event-date"></p>
+            <p id="event-description"></p>
+        </div>
+    </div>
+
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+    <script src="app.js"></script>
+</body>
+</html>
