@@ -570,6 +570,25 @@ body {
     color: #555;
 }
 
+#help-content .credits {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #666;
+    background: #f8f8f8;
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 3px solid #8B0000;
+}
+
+#help-content .credits a {
+    color: #8B0000;
+    text-decoration: none;
+}
+
+#help-content .credits a:hover {
+    text-decoration: underline;
+}
+
 .help-footer {
     margin-top: 20px;
     padding-top: 20px;
