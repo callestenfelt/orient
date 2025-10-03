@@ -329,13 +329,14 @@ body {
     border: 3px solid #e2dcd5;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     background: #213159;
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.3s ease;
 }
 
 .map-event-marker:hover img {
     width: 80px;
     height: 80px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    border: 3px solid #213159 !important;
 }
 
 .map-event-marker:not(:has(img))::before {
@@ -347,13 +348,14 @@ body {
     border: 3px solid #e2dcd5;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     display: block;
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.3s ease;
 }
 
 .map-event-marker:hover:not(:has(img))::before {
     width: 80px;
     height: 80px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    border: 3px solid #213159 !important;
 }
 
 .event-label {
@@ -370,12 +372,16 @@ body {
     text-overflow: ellipsis;
     text-align: center;
     transition: all 0.3s ease;
+    position: relative;
 }
 
 .map-event-marker:hover .event-label {
     background: #213159;
     color: #e2dcd5;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    max-width: none;
+    width: max-content;
+    transform: translateX(0);
 }
 
 /* Past event markers */

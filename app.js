@@ -20,9 +20,10 @@ const TOTAL_EVENTS = TOTAL_YEARS * EVENTS_PER_YEAR;
 let events = [];
 let currentYear = START_YEAR;
 let currentEventIndex = 25; // Start at 1938 (5 years * 5 events per year)
-let mapMarkers = [];
+let mapMarkers = new Map(); // Map of eventId -> marker object
 let animatedEvents = new Set(); // Track which events have been animated
 let currentBordersYear = null; // Track currently loaded borders
+let hoveredEventId = null; // Track currently hovered event for line/circle highlighting
 
 // DOM Elements
 const yearDisplay = document.getElementById('year-display');
@@ -453,12 +454,299 @@ async function updateHistoricalBorders() {
     }
 }
 
+// Collision detection: find non-overlapping positions for markers
+function resolveCollisions(filteredEvents) {
+    const positions = [];
+    const MIN_PIXEL_DISTANCE = 100; // Minimum distance between markers in pixels
+    const zoom = map.getZoom();
+
+    // Helper function to calculate pixel distance at current zoom
+    function getPixelDistance(coord1, coord2) {
+        const point1 = map.project(coord1);
+        const point2 = map.project(coord2);
+        return Math.sqrt(
+            Math.pow(point1.x - point2.x, 2) +
+            Math.pow(point1.y - point2.y, 2)
+        );
+    }
+
+    // Helper function to offset coordinates in pixel space and convert back to geo
+    function offsetCoordinates(coords, pixelOffsetX, pixelOffsetY) {
+        const point = map.project(coords);
+        point.x += pixelOffsetX;
+        point.y += pixelOffsetY;
+        const newCoords = map.unproject(point);
+        return [newCoords.lng, newCoords.lat];
+    }
+
+    filteredEvents.forEach((event, index) => {
+        const originalCoords = event.coordinates;
+        let adjustedCoords = [...originalCoords];
+        let attempts = 0;
+        const maxAttempts = 50;
+
+        // Check collision with existing positions
+        while (attempts < maxAttempts) {
+            let hasCollision = false;
+
+            for (const pos of positions) {
+                const distance = getPixelDistance(adjustedCoords, pos.displayCoords);
+
+                if (distance < MIN_PIXEL_DISTANCE) {
+                    hasCollision = true;
+                    break;
+                }
+            }
+
+            if (!hasCollision) {
+                break;
+            }
+
+            // Spiral out from original position in pixel space
+            const angle = (attempts * 137.5) * (Math.PI / 180); // Golden angle
+            const radius = MIN_PIXEL_DISTANCE * 0.7 * Math.sqrt(attempts + 1); // Increasing radius in pixels
+            const offsetX = radius * Math.cos(angle);
+            const offsetY = radius * Math.sin(angle);
+
+            adjustedCoords = offsetCoordinates(originalCoords, offsetX, offsetY);
+
+            attempts++;
+        }
+
+        positions.push({
+            originalCoords: originalCoords,
+            displayCoords: adjustedCoords,
+            event: event
+        });
+    });
+
+    return positions;
+}
+
+// Set hover state for connection lines and circles
+function setConnectionHoverState(eventId, isHovered) {
+    if (!map.getSource('connection-lines')) {
+        return;
+    }
+
+    // Update global hover state
+    hoveredEventId = isHovered ? eventId : null;
+
+    // Re-render layers by updating the data
+    const currentData = map.getSource('connection-lines')._data;
+
+    // Update hover property in all features
+    currentData.features.forEach(feature => {
+        if (feature.properties.eventId === eventId) {
+            feature.properties.hover = isHovered;
+            feature.properties.faded = false;
+        } else {
+            feature.properties.hover = false;
+            feature.properties.faded = isHovered; // Fade out other lines/circles when something is hovered
+        }
+    });
+
+    // Update the source data to trigger re-render
+    map.getSource('connection-lines').setData(currentData);
+
+    // Fade out/in other markers
+    mapMarkers.forEach((marker, markerEventId) => {
+        const el = marker.getElement();
+        if (markerEventId === eventId) {
+            // Keep hovered marker fully visible
+            el.style.transition = 'opacity 1s ease';
+            el.style.opacity = '1';
+        } else {
+            // Fade out other markers
+            el.style.transition = 'opacity 1s ease';
+            el.style.opacity = isHovered ? '0.15' : '1';
+        }
+    });
+}
+
+// Draw connection lines on map
+function drawConnectionLines(positions) {
+    // Remove existing connection layer if present
+    if (map.getSource('connection-lines')) {
+        map.removeLayer('connection-circles');
+        map.removeLayer('connection-lines');
+        map.removeSource('connection-lines');
+    }
+
+    // Create GeoJSON for lines and circles with event IDs
+    const features = [];
+    const circleFeatures = [];
+    let featureId = 0;
+
+    positions.forEach(pos => {
+        // Only draw line if position was adjusted
+        const [origLng, origLat] = pos.originalCoords;
+        const [dispLng, dispLat] = pos.displayCoords;
+
+        if (origLng !== dispLng || origLat !== dispLat) {
+            const eventId = `${pos.event.year}-${pos.event.date}-${pos.event.title}`;
+
+            // Line from display position to original position
+            // Note: We'll use CSS to visually position the line under the marker
+            features.push({
+                type: 'Feature',
+                id: featureId++,
+                geometry: {
+                    type: 'LineString',
+                    coordinates: [pos.displayCoords, pos.originalCoords]
+                },
+                properties: {
+                    eventId: eventId,
+                    hover: false,
+                    faded: false
+                }
+            });
+
+            // Circle at original position
+            circleFeatures.push({
+                type: 'Feature',
+                id: featureId++,
+                geometry: {
+                    type: 'Point',
+                    coordinates: pos.originalCoords
+                },
+                properties: {
+                    eventId: eventId,
+                    hover: false,
+                    faded: false
+                }
+            });
+        }
+    });
+
+    if (features.length > 0) {
+        // Add source with promoteId to use feature id for feature state
+        map.addSource('connection-lines', {
+            type: 'geojson',
+            data: {
+                type: 'FeatureCollection',
+                features: [...features, ...circleFeatures]
+            },
+            promoteId: 'id',
+            lineMetrics: true  // Enable line-gradient support
+        });
+
+        // Add line layer (render below markers)
+        map.addLayer({
+            id: 'connection-lines',
+            type: 'line',
+            source: 'connection-lines',
+            filter: ['==', ['geometry-type'], 'LineString'],
+            paint: {
+                'line-color': [
+                    'case',
+                    ['get', 'hover'],
+                    '#213159',
+                    '#ffffff'
+                ],
+                'line-width': [
+                    'case',
+                    ['get', 'hover'],
+                    3,
+                    2
+                ],
+                'line-offset': 0,
+                'line-opacity': [
+                    'case',
+                    ['get', 'faded'],
+                    0.1,
+                    1
+                ]
+            }
+        }, 'waterway-label');
+
+        // Add circle layer (render below markers)
+        map.addLayer({
+            id: 'connection-circles',
+            type: 'circle',
+            source: 'connection-lines',
+            filter: ['==', ['geometry-type'], 'Point'],
+            paint: {
+                'circle-radius': [
+                    'case',
+                    ['get', 'hover'],
+                    5, // 10px diameter
+                    4  // 8px diameter
+                ],
+                'circle-color': [
+                    'case',
+                    ['get', 'hover'],
+                    '#213159', // Match label background color on hover
+                    '#ffffff'
+                ],
+                'circle-opacity': [
+                    'case',
+                    ['get', 'faded'],
+                    0.1, // Fade out non-hovered circles
+                    0.8  // Normal opacity
+                ],
+                'circle-stroke-width': 1,
+                'circle-stroke-color': [
+                    'case',
+                    ['get', 'hover'],
+                    '#213159',
+                    '#ffffff'
+                ],
+                'circle-stroke-opacity': [
+                    'case',
+                    ['get', 'faded'],
+                    0.1, // Fade out stroke too
+                    1    // Normal opacity
+                ]
+            }
+        }, 'waterway-label');
+
+        // Add transitions for smooth hover effect with delay
+        // Delay of 450ms allows event marker to complete its animation first
+        map.setPaintProperty('connection-lines', 'line-width-transition', {
+            duration: 300,
+            delay: 450
+        });
+
+        map.setPaintProperty('connection-lines', 'line-color-transition', {
+            duration: 300,
+            delay: 450
+        });
+
+        map.setPaintProperty('connection-lines', 'line-opacity-transition', {
+            duration: 1000,
+            delay: 450
+        });
+
+        map.setPaintProperty('connection-circles', 'circle-radius-transition', {
+            duration: 300,
+            delay: 450
+        });
+
+        map.setPaintProperty('connection-circles', 'circle-color-transition', {
+            duration: 300,
+            delay: 450
+        });
+
+        map.setPaintProperty('connection-circles', 'circle-stroke-color-transition', {
+            duration: 300,
+            delay: 450
+        });
+
+        map.setPaintProperty('connection-circles', 'circle-opacity-transition', {
+            duration: 1000,
+            delay: 450
+        });
+
+        map.setPaintProperty('connection-circles', 'circle-stroke-opacity-transition', {
+            duration: 1000,
+            delay: 450
+        });
+    }
+}
+
 // Update event markers on map based on current year with animation
 function updateEventMarkers() {
-    // Clear existing markers
-    mapMarkers.forEach(marker => marker.remove());
-    mapMarkers = [];
-
     // Get events for current year and sort by date
     const yearEvents = events
         .filter(e => e.year === currentYear)
@@ -477,8 +765,26 @@ function updateEventMarkers() {
 
     console.log(`Showing ${filteredEvents.length} events for year ${currentYear}, period ${yearProgress}`);
 
+    // Create set of event IDs that should be visible
+    const visibleEventIds = new Set(filteredEvents.map(e => `${e.year}-${e.date}-${e.title}`));
+
+    // Remove markers that are no longer visible
+    for (const [eventId, marker] of mapMarkers.entries()) {
+        if (!visibleEventIds.has(eventId)) {
+            marker.remove();
+            mapMarkers.delete(eventId);
+        }
+    }
+
     // If no events, reset to default Europe view
     if (filteredEvents.length === 0) {
+        // Remove connection lines
+        if (map.getSource('connection-lines')) {
+            map.removeLayer('connection-circles');
+            map.removeLayer('connection-lines');
+            map.removeSource('connection-lines');
+        }
+
         map.flyTo({
             center: [15, 52],
             zoom: 4,
@@ -489,66 +795,10 @@ function updateEventMarkers() {
         return;
     }
 
-    // Create markers for each event with staggered animation
-    filteredEvents.forEach((event, index) => {
-        const el = document.createElement('div');
-        el.className = 'map-event-marker';
-        
-        // Create unique ID for this event
-        const eventId = `${event.year}-${event.date}-${event.title}`;
-        
-        // Check if this event has been animated before
-        const hasBeenAnimated = animatedEvents.has(eventId);
-        
-        // Set initial opacity based on animation state
-        el.style.opacity = hasBeenAnimated ? '1' : '0';
-
-        // Add image if available
-        if (event.image) {
-            const img = document.createElement('img');
-            img.src = event.image;
-            img.alt = event.title;
-            img.onerror = () => {
-                img.remove();
-            };
-            el.appendChild(img);
-        }
-
-        // Add label
-        const label = document.createElement('div');
-        label.className = 'event-label';
-        label.textContent = event.title;
-        el.appendChild(label);
-
-        // Click handler
-        el.addEventListener('click', (e) => {
-            e.stopPropagation();
-            showEventPanel(event);
-        });
-
-        const marker = new mapboxgl.Marker(el)
-            .setLngLat(event.coordinates)
-            .addTo(map);
-
-        mapMarkers.push(marker);
-
-        // Only animate if this is the first time showing this event
-        if (!hasBeenAnimated) {
-            const delay = index * 250;
-            setTimeout(() => {
-                el.style.transition = 'opacity 600ms cubic-bezier(0.4, 0, 0.2, 1)';
-                el.style.opacity = '1';
-            }, delay);
-            
-            // Mark this event as animated
-            animatedEvents.add(eventId);
-        }
-    });
-
     // Calculate bounds to fit all events with padding
     if (filteredEvents.length > 0) {
         const bounds = new mapboxgl.LngLatBounds();
-        
+
         filteredEvents.forEach(event => {
             bounds.extend(event.coordinates);
         });
@@ -560,6 +810,89 @@ function updateEventMarkers() {
             maxZoom: 6,
             essential: true,
             linear: false
+        });
+
+        // Wait for map movement to finish, then resolve collisions
+        map.once('moveend', () => {
+            // Resolve collisions and get adjusted positions at final zoom level
+            const positions = resolveCollisions(filteredEvents);
+
+            // Draw connection lines
+            drawConnectionLines(positions);
+
+            // Create or update markers for each event
+            positions.forEach((pos, index) => {
+                const event = pos.event;
+                const eventId = `${event.year}-${event.date}-${event.title}`;
+
+                // Check if marker already exists
+                if (mapMarkers.has(eventId)) {
+                    // Update existing marker position
+                    const existingMarker = mapMarkers.get(eventId);
+                    existingMarker.setLngLat(pos.displayCoords);
+                    // Note: Event listeners remain attached to existing markers
+                } else {
+                    // Create new marker
+                    const el = document.createElement('div');
+                    el.className = 'map-event-marker';
+
+                    // Check if this event has been animated before
+                    const hasBeenAnimated = animatedEvents.has(eventId);
+
+                    // Set initial opacity based on animation state
+                    el.style.opacity = hasBeenAnimated ? '1' : '0';
+
+                    // Add image if available
+                    if (event.image) {
+                        const img = document.createElement('img');
+                        img.src = event.image;
+                        img.alt = event.title;
+                        img.onerror = () => {
+                            img.remove();
+                        };
+                        el.appendChild(img);
+                    }
+
+                    // Add label
+                    const label = document.createElement('div');
+                    label.className = 'event-label';
+                    label.textContent = event.title;
+                    el.appendChild(label);
+
+                    // Click handler
+                    el.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        showEventPanel(event);
+                    });
+
+                    // Hover handlers to highlight connection lines/circles
+                    el.addEventListener('mouseenter', () => {
+                        setConnectionHoverState(eventId, true);
+                    });
+
+                    el.addEventListener('mouseleave', () => {
+                        setConnectionHoverState(eventId, false);
+                    });
+
+                    const marker = new mapboxgl.Marker(el)
+                        .setLngLat(pos.displayCoords)
+                        .addTo(map);
+
+                    mapMarkers.set(eventId, marker);
+
+                    // Only animate if this is the first time showing this event
+                    if (!hasBeenAnimated) {
+                        const delay = index * 250;
+                        setTimeout(() => {
+                            el.style.transition = 'opacity 600ms cubic-bezier(0.4, 0, 0.2, 1)';
+                            el.style.opacity = '1';
+                        }, delay);
+
+                        // Mark this event as animated
+                        animatedEvents.add(eventId);
+                    }
+                }
+            });
         });
     }
 }
@@ -643,6 +976,13 @@ document.addEventListener('keydown', (e) => {
 // Initialize when map is loaded
 map.on('load', () => {
     console.log('Map loaded');
+
+    // Check what language fields are available in the map style
+    checkAvailableLanguages();
+
+    // Set initial language to Swedish
+    setMapLanguage('sv');
+
     initTimeline();
     loadEvents();
     // Show help overlay on first load
@@ -655,6 +995,167 @@ map.on('load', () => {
 map.on('error', (e) => {
     console.error('Map error:', e);
 });
+
+// Function to check what language fields are available in the map style
+function checkAvailableLanguages() {
+    const style = map.getStyle();
+    const layers = style.layers;
+    const availableFields = new Set();
+
+    console.log('=== Checking available language fields ===');
+
+    // Find a layer with text fields to inspect
+    layers.forEach(layer => {
+        if (layer.layout && layer.layout['text-field']) {
+            const textField = layer.layout['text-field'];
+
+            // Log the layer and its text field structure
+            if (layer.id.includes('label') || layer.id.includes('place')) {
+                console.log(`Layer: ${layer.id}`);
+                console.log('Text field:', textField);
+            }
+
+            // Try to extract field names from expressions
+            if (Array.isArray(textField)) {
+                const fieldStr = JSON.stringify(textField);
+                const nameFields = fieldStr.match(/name_[a-z]{2}/g);
+                if (nameFields) {
+                    nameFields.forEach(field => availableFields.add(field));
+                }
+            }
+        }
+    });
+
+    console.log('Available language fields detected:', Array.from(availableFields));
+    console.log('Swedish (name_sv) available:', availableFields.has('name_sv'));
+    console.log('English (name_en) available:', availableFields.has('name_en'));
+    console.log('==========================================');
+
+    return Array.from(availableFields);
+}
+
+// Swedish translations for geographic names
+const swedishTranslations = {
+    // Countries
+    'Germany': 'Tyskland',
+    'Poland': 'Polen',
+    'France': 'Frankrike',
+    'United Kingdom': 'Storbritannien',
+    'Italy': 'Italien',
+    'Spain': 'Spanien',
+    'Portugal': 'Portugal',
+    'Netherlands': 'Nederländerna',
+    'Belgium': 'Belgien',
+    'Luxembourg': 'Luxemburg',
+    'Switzerland': 'Schweiz',
+    'Austria': 'Österrike',
+    'Czechoslovakia': 'Tjeckoslovakien',
+    'Hungary': 'Ungern',
+    'Romania': 'Rumänien',
+    'Yugoslavia': 'Jugoslavien',
+    'Bulgaria': 'Bulgarien',
+    'Greece': 'Grekland',
+    'Albania': 'Albanien',
+    'Norway': 'Norge',
+    'Sweden': 'Sverige',
+    'Finland': 'Finland',
+    'Denmark': 'Danmark',
+    'Estonia': 'Estland',
+    'Latvia': 'Lettland',
+    'Lithuania': 'Litauen',
+    'Soviet Union': 'Sovjetunionen',
+    'Russia': 'Ryssland',
+    'Ukraine': 'Ukraina',
+    'Belarus': 'Vitryssland',
+    'Turkey': 'Turkiet',
+    'Ireland': 'Irland',
+    'Iceland': 'Island',
+
+    // Oceans and Seas
+    'Atlantic Ocean': 'Atlanten',
+    'North Sea': 'Nordsjön',
+    'Baltic Sea': 'Östersjön',
+    'Mediterranean Sea': 'Medelhavet',
+    'Black Sea': 'Svarta havet',
+    'Adriatic Sea': 'Adriatiska havet',
+    'Aegean Sea': 'Egeiska havet',
+    'Norwegian Sea': 'Norska havet',
+    'Barents Sea': 'Barents hav',
+
+    // Cities
+    'Berlin': 'Berlin',
+    'Warsaw': 'Warszawa',
+    'Paris': 'Paris',
+    'London': 'London',
+    'Rome': 'Rom',
+    'Vienna': 'Wien',
+    'Prague': 'Prag',
+    'Budapest': 'Budapest',
+    'Moscow': 'Moskva',
+    'Copenhagen': 'Köpenhamn',
+    'Oslo': 'Oslo',
+    'Stockholm': 'Stockholm',
+    'Helsinki': 'Helsingfors',
+    'Athens': 'Aten',
+    'Brussels': 'Bryssel',
+    'Amsterdam': 'Amsterdam',
+    'Lisbon': 'Lissabon',
+    'Madrid': 'Madrid'
+};
+
+// Function to change map language
+function setMapLanguage(lang) {
+    const style = map.getStyle();
+    const layers = style.layers;
+
+    let updatedCount = 0;
+
+    layers.forEach(layer => {
+        if (layer.layout && layer.layout['text-field']) {
+            const textField = layer.layout['text-field'];
+
+            // Check if this is a name field
+            let isNameField = false;
+
+            if (typeof textField === 'string' && textField.includes('name')) {
+                isNameField = true;
+            } else if (Array.isArray(textField)) {
+                const hasNameField = JSON.stringify(textField).includes('name');
+                if (hasNameField) {
+                    isNameField = true;
+                }
+            }
+
+            if (isNameField) {
+                try {
+                    if (lang === 'sv') {
+                        // For Swedish, use case expression to translate from English
+                        const caseExpression = ['case'];
+
+                        // Add translations
+                        Object.entries(swedishTranslations).forEach(([english, swedish]) => {
+                            caseExpression.push(['==', ['get', 'name_en'], english]);
+                            caseExpression.push(swedish);
+                        });
+
+                        // Fallback to name_en if no translation found
+                        caseExpression.push(['get', 'name_en']);
+
+                        map.setLayoutProperty(layer.id, 'text-field', caseExpression);
+                    } else {
+                        // For English, use name_en
+                        map.setLayoutProperty(layer.id, 'text-field', ['get', 'name_en']);
+                    }
+                    updatedCount++;
+                } catch (error) {
+                    console.warn(`Could not update language for layer ${layer.id}:`, error);
+                }
+            }
+        }
+    });
+
+    console.log(`Map language changed to: ${lang} (${updatedCount} layers updated)`);
+}
 
 // Help and Language Controls
 const helpBtn = document.getElementById('help-btn');
@@ -714,7 +1215,7 @@ document.querySelectorAll('.language-option').forEach(option => {
         // Close menu
         languageMenu.classList.add('hidden');
         
-        // Here you would implement language switching logic
-        console.log('Language changed to:', lang);
+        // Change map language
+        setMapLanguage(lang);
     });
 });
