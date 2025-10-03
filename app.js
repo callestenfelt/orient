@@ -34,17 +34,118 @@ const closePanel = document.getElementById('close-panel');
 const infoBox = document.getElementById('info-box');
 const infoText = document.getElementById('info-text');
 
-// Random coordinates within Europe bounds
-function getRandomEuropeCoordinates() {
-    const minLng = -10;
-    const maxLng = 40;
-    const minLat = 35;
-    const maxLat = 70;
+// Get coordinates based on event title and description
+function getEventCoordinates(rubrik, ingress) {
+    const coordinateMap = {
+        // Swedish events - Stockholm
+        'Sveriges utlännings­lag': [18.0686, 59.3293],
+        'Barnkvoten': [18.0686, 59.3293],
+        'Samlingsregeringen': [18.0686, 59.3293],
+        'Räddnings­aktioner': [18.0686, 59.3293],
 
-    const lng = minLng + Math.random() * (maxLng - minLng);
-    const lat = minLat + Math.random() * (maxLat - minLat);
+        // German events - Berlin
+        'Namnlagen': [13.4050, 52.5200],
+        'J-stämpeln': [13.4050, 52.5200],
+        'Judiska företag förbjuds': [13.4050, 52.5200],
+        'November­­pogromen': [13.4050, 52.5200],
+        'Koncentrations­läger': [13.2633, 52.7667], // Sachsenhausen
+        'Aktion T4 inleds': [13.4050, 52.5200],
+        'Bofasta romer': [13.4050, 52.5200],
+        'Den gula stjärnan': [13.4050, 52.5200],
+        'Deportation av Nazitysklands judar': [13.4050, 52.5200],
+        'Aktion T4 avslutas': [13.4050, 52.5200],
+        'Wannsee­konferensen': [13.1644, 52.4344], // Wannsee
+        'Attentat mot Hitler': [13.4050, 52.5200],
+        'Förstör bevisen': [13.4050, 52.5200],
+        'Tyskland kapitulerar': [13.4050, 52.5200],
+        'Nürnberg­rättegång­arna': [11.0773, 49.4521], // Nuremberg
 
-    return [lng, lat];
+        // Austria
+        'Anschluss': [16.3738, 48.2082], // Vienna
+
+        // France
+        'Evian­konferensen': [6.5894, 46.4011], // Évian-les-Bains
+        'Frankrike kapitulerar': [2.3522, 48.8566], // Paris
+        'Dagen D': [-0.5760, 49.3200], // Normandy
+
+        // Czech Republic
+        'Tjeckien invaderas': [14.4378, 50.0755], // Prague
+
+        // Russia/Soviet Union
+        'Molotov-Ribbentrop-pakten': [37.6173, 55.7558], // Moscow
+        'Operation Barbarossa': [37.6173, 55.7558], // Moscow
+        'Stalingrad': [44.5169, 48.7080], // Volgograd
+
+        // Poland
+        'Kriget börjar': [21.0122, 52.2297], // Warsaw
+        'Getton': [21.0122, 52.2297], // Warsaw
+        'Auschwitz I börjar byggas': [19.2034, 50.0347], // Oświęcim
+        'Auschwitz II börjar byggas': [19.2034, 50.0347], // Oświęcim
+        'Auschwitz-Birkenau befrias': [19.2034, 50.0347], // Oświęcim
+        'Operation Reinhard': [22.0534, 52.6260], // Treblinka
+        'De första judarna gasas ihjäl i Chełmno': [18.7290, 52.1456], // Chełmno
+        'Deportation av och mord på romer': [19.2034, 50.0347], // Auschwitz
+        'Aktion "Skördefesten"': [22.5667, 51.2500], // Lublin
+        '"Aktion ""Skördefesten"""': [22.5667, 51.2500], // Lublin (CSV format)
+        'Majdanek befrias': [22.6050, 51.2220], // Majdanek/Lublin
+        'Pogromen i Kielce': [20.6286, 50.8703], // Kielce
+
+        // Denmark
+        'Danmark kapitulerar': [12.5683, 55.6761], // Copenhagen
+        'De danska judarna räddas': [12.5683, 55.6761], // Copenhagen
+
+        // Luxembourg
+        'Luxemburg kapitulerar': [6.1296, 49.6116], // Luxembourg City
+
+        // Netherlands
+        'Nederländerna kapitulerar': [4.9041, 52.3676], // Amsterdam
+
+        // Belgium
+        'Belgien kapitulerar': [4.3517, 50.8503], // Brussels
+
+        // Norway
+        'Norge kapitulerar': [10.7522, 59.9139], // Oslo
+        'Norska judar deporteras': [10.7522, 59.9139], // Oslo
+
+        // Belarus
+        'Massakern i Prypjat-träsken': [26.0951, 52.1229], // Pinsk
+
+        // Ukraine
+        'Massakern vid Kamjanets-Podilskyj': [26.5850, 48.6847],
+        'Massakern vid Babyn Jar': [30.5234, 50.4501], // Kyiv
+
+        // Latvia
+        'Massakern vid Rumbula': [24.1052, 56.9496], // Riga
+
+        // USA
+        'Världskrig': [-157.9637, 21.3649], // Pearl Harbor
+        'Förenta Nationerna': [-122.4194, 37.7749], // San Francisco
+
+        // Egypt
+        'Slaget vid El Alamein': [28.9550, 30.8170],
+
+        // Italy
+        'Invasionen av Sicilien': [13.3615, 38.1157], // Palermo
+        'Italien kapitulerar': [12.4964, 41.9028], // Rome
+
+        // Hungary
+        'Deportation av Ungerns judar': [19.0402, 47.4979], // Budapest
+
+        // UK
+        'Internationell protest': [-0.1276, 51.5074], // London
+
+        // Japan
+        'Japan kapitulerar': [139.6917, 35.6895] // Tokyo
+    };
+
+    // Debug: log if coordinate not found
+    const coords = coordinateMap[rubrik];
+    if (!coords) {
+        console.log('No coordinates found for:', rubrik);
+    }
+
+    // Return coordinates if found, otherwise return default Europe center
+    return coords || [15, 52];
 }
 
 // Parse date to sort events chronologically
@@ -143,7 +244,7 @@ async function loadEvents() {
                     title: rubrik,
                     description: ingress,
                     image: bildUrl,
-                    coordinates: getRandomEuropeCoordinates()
+                    coordinates: getEventCoordinates(rubrik, ingress)
                 });
             }
         }
@@ -274,20 +375,14 @@ function updateEventMarkers() {
 
     // Determine which time period we're in (based on timeline position)
     const yearProgress = currentEventIndex % EVENTS_PER_YEAR;
-    
-    // Filter events based on timeline position
-    // 0 = Jan-Mar, 1 = Apr-Jun, 2 = Jul-Sep, 3 = Oct-Dec, 4 = All year
-    const filteredEvents = yearEvents.filter(event => {
-        const month = event.parsedDate.getMonth(); // 0-11
-        
-        if (yearProgress === 0) return month >= 0 && month <= 2;   // Jan-Mar
-        if (yearProgress === 1) return month >= 0 && month <= 5;   // Jan-Jun
-        if (yearProgress === 2) return month >= 0 && month <= 8;   // Jan-Sep
-        if (yearProgress === 3) return month >= 0 && month <= 11;  // Jan-Dec
-        if (yearProgress === 4) return true;                       // All year
-        
-        return true;
-    });
+
+    // Filter events based on timeline position - show events progressively
+    // Split events into 5 groups based on their chronological order
+    const eventsPerStep = Math.ceil(yearEvents.length / EVENTS_PER_YEAR);
+    const startIndex = 0;
+    const endIndex = (yearProgress + 1) * eventsPerStep;
+
+    const filteredEvents = yearEvents.slice(startIndex, endIndex);
 
     console.log(`Showing ${filteredEvents.length} events for year ${currentYear}, period ${yearProgress}`);
 
