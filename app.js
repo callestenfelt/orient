@@ -411,19 +411,24 @@ async function updateHistoricalBorders() {
             type: 'fill',
             source: 'borders',
             paint: {
-                'fill-color': [
-                    'case',
-                    ['in', 'German', ['get', 'Foreign_Po']], '#8B0000', // Dark red for German occupation
-                    ['in', 'Italian', ['get', 'Foreign_Po']], '#654321', // Brown for Italian
-                    ['==', ['get', 'Foreign_Po'], 'Axis'], '#4B0000', // Very dark red for Axis
-                    'rgba(0,0,0,0)' // Transparent for others
-                ],
+                'fill-color': '#8B0000', // Dark red
                 'fill-opacity': [
                     'case',
-                    ['in', 'German', ['get', 'Foreign_Po']], 0.35,
-                    ['in', 'Italian', ['get', 'Foreign_Po']], 0.25,
+                    // Check if Foreign_Po contains "German" or "occupied"
+                    [
+                        'any',
+                        ['==', ['get', 'Foreign_Po'], 'German-occupied'],
+                        ['==', ['get', 'Foreign_Po'], 'German Protectorate'],
+                        ['==', ['get', 'Foreign_Po'], 'German, Italian-occupied'],
+                        ['==', ['get', 'Foreign_Po'], 'German, Italian, Bulgarian-occupied'],
+                        ['==', ['get', 'Foreign_Po'], 'Axis and German-occupied'],
+                        ['==', ['get', 'Foreign_Po'], 'Axis and German, Italian-occupied']
+                    ], 0.4,
+                    ['==', ['get', 'Foreign_Po'], 'Italian-occupied'], 0.3,
+                    ['==', ['get', 'Foreign_Po'], 'Italian Protectorate'], 0.25,
                     ['==', ['get', 'Foreign_Po'], 'Axis'], 0.25,
-                    0
+                    ['==', ['get', 'Foreign_Po'], 'Romanian-occupied'], 0.25,
+                    0 // Transparent for non-occupied
                 ]
             }
         }, 'waterway-label'); // Insert below labels
