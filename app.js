@@ -22,6 +22,7 @@ let currentYear = START_YEAR;
 let currentEventIndex = 25; // Start at 1938 (5 years * 5 events per year)
 let mapMarkers = [];
 let animatedEvents = new Set(); // Track which events have been animated
+let currentBordersYear = null; // Track currently loaded borders
 
 // DOM Elements
 const yearDisplay = document.getElementById('year-display');
@@ -320,6 +321,9 @@ function updateTimeline() {
     // Update info box with year context
     updateYearInfo();
 
+    // Update historical borders overlay
+    updateHistoricalBorders();
+
     // Update event markers on map
     updateEventMarkers();
 }
@@ -359,6 +363,88 @@ function updateYearInfo() {
         infoBox.classList.remove('hidden');
     } else {
         infoBox.classList.add('hidden');
+    }
+}
+
+// Load and update historical borders based on current year
+async function updateHistoricalBorders() {
+    // Only load borders for years we have data (1938-1944)
+    if (currentYear < 1938 || currentYear > 1944) {
+        // Remove borders layer if outside range
+        if (map.getLayer('borders-fill')) {
+            map.removeLayer('borders-fill');
+            map.removeLayer('borders-outline');
+            map.removeSource('borders');
+            currentBordersYear = null;
+        }
+        return;
+    }
+
+    // Don't reload if already showing this year
+    if (currentBordersYear === currentYear) {
+        return;
+    }
+
+    try {
+        const geojsonFile = `geojson/December_31_${currentYear}.geojson`;
+        console.log(`Loading borders for ${currentYear}...`);
+
+        const response = await fetch(geojsonFile);
+        const data = await response.json();
+
+        // Remove existing layers if they exist
+        if (map.getLayer('borders-fill')) {
+            map.removeLayer('borders-fill');
+            map.removeLayer('borders-outline');
+            map.removeSource('borders');
+        }
+
+        // Add source
+        map.addSource('borders', {
+            type: 'geojson',
+            data: data
+        });
+
+        // Add fill layer with opacity based on occupation status
+        map.addLayer({
+            id: 'borders-fill',
+            type: 'fill',
+            source: 'borders',
+            paint: {
+                'fill-color': [
+                    'case',
+                    ['in', 'German', ['get', 'Foreign_Po']], '#8B0000', // Dark red for German occupation
+                    ['in', 'Italian', ['get', 'Foreign_Po']], '#654321', // Brown for Italian
+                    ['==', ['get', 'Foreign_Po'], 'Axis'], '#4B0000', // Very dark red for Axis
+                    'rgba(0,0,0,0)' // Transparent for others
+                ],
+                'fill-opacity': [
+                    'case',
+                    ['in', 'German', ['get', 'Foreign_Po']], 0.35,
+                    ['in', 'Italian', ['get', 'Foreign_Po']], 0.25,
+                    ['==', ['get', 'Foreign_Po'], 'Axis'], 0.25,
+                    0
+                ]
+            }
+        }, 'waterway-label'); // Insert below labels
+
+        // Add outline layer
+        map.addLayer({
+            id: 'borders-outline',
+            type: 'line',
+            source: 'borders',
+            paint: {
+                'line-color': '#444',
+                'line-width': 0.5,
+                'line-opacity': 0.3
+            }
+        }, 'waterway-label');
+
+        currentBordersYear = currentYear;
+        console.log(`Loaded borders for ${currentYear}`);
+
+    } catch (error) {
+        console.error(`Error loading borders for ${currentYear}:`, error);
     }
 }
 
