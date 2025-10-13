@@ -112,24 +112,67 @@ function getEventCoordinates(rubrik) {
 
 // Parse date from various formats
 function parseEventDate(dateString) {
+    // Standard YYYY-MM-DD format
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
         return new Date(dateString);
     }
+
     const monthMap = {
         'januari': 0, 'februari': 1, 'mars': 2, 'april': 3, 'maj': 4, 'juni': 5,
         'juli': 6, 'augusti': 7, 'september': 8, 'oktober': 9, 'november': 10, 'december': 11
     };
-    const monthYearMatch = dateString.toLowerCase().match(/^([a-zåäö]+)\s+(\d{4})$/);
-    if (monthYearMatch) {
-        const month = monthMap[monthYearMatch[1]];
-        const year = parseInt(monthYearMatch[2]);
-        return new Date(year, month, 15);
+
+    const seasonMap = {
+        'våren': { month: 2, day: 21 },      // Spring: March 21
+        'vår': { month: 2, day: 21 },
+        'sommaren': { month: 5, day: 21 },   // Summer: June 21
+        'sommar': { month: 5, day: 21 },
+        'hösten': { month: 8, day: 21 },     // Autumn: September 21
+        'höst': { month: 8, day: 21 },
+        'vintern': { month: 11, day: 21 },   // Winter: December 21
+        'vinter': { month: 11, day: 21 }
+    };
+
+    // Normalize the string: remove extra spaces
+    const normalized = dateString.trim().replace(/\s+/g, ' ');
+
+    // Try month + year format with space (e.g., "januari 1938", "april 1940")
+    const monthYearSpaceMatch = normalized.toLowerCase().match(/^([a-zåäö]+)\s+(\d{4})$/);
+    if (monthYearSpaceMatch) {
+        const monthOrSeason = monthYearSpaceMatch[1];
+        const year = parseInt(monthYearSpaceMatch[2]);
+
+        // Check if it's a month
+        if (monthMap[monthOrSeason] !== undefined) {
+            return new Date(year, monthMap[monthOrSeason], 15);
+        }
+
+        // Check if it's a season
+        if (seasonMap[monthOrSeason]) {
+            const { month, day } = seasonMap[monthOrSeason];
+            return new Date(year, month, day);
+        }
     }
-    const seasonYearMatch = dateString.match(/^([A-Za-zåäö]+)\s*(\d{4})$/);
-    if (seasonYearMatch) {
-        const year = parseInt(seasonYearMatch[2]);
-        return new Date(year, 6, 1);
+
+    // Try month + year format without space (e.g., "augusti1941", "Hösten1940")
+    const monthYearNoSpaceMatch = normalized.toLowerCase().match(/^([a-zåäö]+)(\d{4})$/);
+    if (monthYearNoSpaceMatch) {
+        const monthOrSeason = monthYearNoSpaceMatch[1];
+        const year = parseInt(monthYearNoSpaceMatch[2]);
+
+        // Check if it's a month
+        if (monthMap[monthOrSeason] !== undefined) {
+            return new Date(year, monthMap[monthOrSeason], 15);
+        }
+
+        // Check if it's a season
+        if (seasonMap[monthOrSeason]) {
+            const { month, day } = seasonMap[monthOrSeason];
+            return new Date(year, month, day);
+        }
     }
+
+    // Default fallback
     return new Date(1938, 0, 1);
 }
 
@@ -437,7 +480,7 @@ function setupTerritoryInteractivity() {
             const feature = e.features[0];
             const territoryType = getTerritoryType(feature);
 
-            if (territoryType && territoryInfo[territoryType]) {
+            if (territoryType && translations && translations.territories && translations.territories[territoryType]) {
                 showTerritoryInfo(territoryType);
             }
         }
@@ -530,7 +573,8 @@ function createEventMarkers() {
         const el = document.createElement('div');
         el.className = 'event-marker';
 
-        el.addEventListener('click', () => {
+        el.addEventListener('click', (e) => {
+            e.stopPropagation();
             goToEvent(index);
         });
 
@@ -557,7 +601,8 @@ function createEventMarkers() {
         label.textContent = currentLanguage === 'sv' ? event.title_sv : event.title_en;
         el.appendChild(label);
 
-        el.addEventListener('click', () => {
+        el.addEventListener('click', (e) => {
+            e.stopPropagation();
             goToEvent(currentEventIndex);
         });
 
@@ -648,19 +693,39 @@ function createTimelineYearLabels() {
     container.appendChild(finalTick);
 }
 
+// Calculate timeline position for a date (respects year boundaries)
+function getTimelinePosition(date) {
+    const minDate = events[0].parsedDate;
+    const maxDate = events[events.length - 1].parsedDate;
+    const startYear = minDate.getFullYear();
+    const endYear = maxDate.getFullYear();
+    const totalYears = endYear - startYear + 1;
+
+    const eventYear = date.getFullYear();
+    const yearIndex = eventYear - startYear;
+
+    // Calculate position within the year (0 to 1)
+    const yearStart = new Date(eventYear, 0, 1);
+    const yearEnd = new Date(eventYear, 11, 31, 23, 59, 59);
+    const yearProgress = (date - yearStart) / (yearEnd - yearStart);
+
+    // Calculate overall position
+    const yearSectionWidth = 100 / totalYears;
+    const position = (yearIndex * yearSectionWidth) + (yearProgress * yearSectionWidth);
+
+    return position;
+}
+
 // Create timeline markers
 function createTimelineMarkers() {
     const container = document.getElementById('timeline-markers');
     container.innerHTML = '';
 
-    const minDate = events[0].parsedDate.getTime();
-    const maxDate = events[events.length - 1].parsedDate.getTime();
-
     events.forEach((event, index) => {
         const marker = document.createElement('div');
         marker.className = 'timeline-marker';
 
-        const position = ((event.parsedDate.getTime() - minDate) / (maxDate - minDate)) * 100;
+        const position = getTimelinePosition(event.parsedDate);
         marker.style.left = position + '%';
 
         if (index === currentEventIndex) {
@@ -678,11 +743,7 @@ function createTimelineMarkers() {
 // Update timeline handle position
 function updateTimelineHandle() {
     const handle = document.getElementById('timeline-handle');
-    const minDate = events[0].parsedDate.getTime();
-    const maxDate = events[events.length - 1].parsedDate.getTime();
-    const currentDate = events[currentEventIndex].parsedDate.getTime();
-
-    const position = ((currentDate - minDate) / (maxDate - minDate)) * 100;
+    const position = getTimelinePosition(events[currentEventIndex].parsedDate);
     handle.style.left = position + '%';
 }
 
@@ -704,6 +765,26 @@ function goToEvent(index) {
         duration: 1000
     });
 }
+// Convert timeline position (0-100%) to a date (respects year boundaries)
+function getDateFromTimelinePosition(percent) {
+    const minDate = events[0].parsedDate;
+    const maxDate = events[events.length - 1].parsedDate;
+    const startYear = minDate.getFullYear();
+    const endYear = maxDate.getFullYear();
+    const totalYears = endYear - startYear + 1;
+
+    const yearSectionWidth = 100 / totalYears;
+    const yearIndex = Math.floor(percent / yearSectionWidth);
+    const yearProgress = (percent % yearSectionWidth) / yearSectionWidth;
+
+    const targetYear = startYear + yearIndex;
+    const yearStart = new Date(targetYear, 0, 1);
+    const yearEnd = new Date(targetYear, 11, 31, 23, 59, 59);
+    const yearDuration = yearEnd - yearStart;
+
+    return new Date(yearStart.getTime() + (yearDuration * yearProgress));
+}
+
 // Timeline dragging functionality
 function initTimelineDragging() {
     const handle = document.getElementById('timeline-handle');
@@ -720,23 +801,21 @@ function initTimelineDragging() {
         if (!isDragging) return;
 
         const x = e.clientX - timelineRect.left;
-        const percent = Math.max(0, Math.min(1, x / timelineRect.width));
+        const percent = Math.max(0, Math.min(1, x / timelineRect.width)) * 100;
 
-        const minDate = events[0].parsedDate.getTime();
-        const maxDate = events[events.length - 1].parsedDate.getTime();
-        const currentTime = minDate + (maxDate - minDate) * percent;
+        const currentTime = getDateFromTimelinePosition(percent);
 
         let nearestIndex = 0;
         let nearestDiff = Infinity;
         events.forEach((event, index) => {
-            const diff = Math.abs(event.parsedDate.getTime() - currentTime);
+            const diff = Math.abs(event.parsedDate.getTime() - currentTime.getTime());
             if (diff < nearestDiff) {
                 nearestDiff = diff;
                 nearestIndex = index;
             }
         });
 
-        handle.style.left = (percent * 100) + '%';
+        handle.style.left = percent + '%';
 
         const event = events[nearestIndex];
         document.getElementById('tooltip-date').textContent = formatEventDate(event.date);
@@ -752,15 +831,13 @@ function initTimelineDragging() {
         isDragging = false;
         tooltip.classList.add('hidden');
 
-        const handleLeft = parseFloat(handle.style.left) / 100;
-        const minDate = events[0].parsedDate.getTime();
-        const maxDate = events[events.length - 1].parsedDate.getTime();
-        const currentTime = minDate + (maxDate - minDate) * handleLeft;
+        const handleLeft = parseFloat(handle.style.left);
+        const currentTime = getDateFromTimelinePosition(handleLeft);
 
         let nearestIndex = 0;
         let nearestDiff = Infinity;
         events.forEach((event, index) => {
-            const diff = Math.abs(event.parsedDate.getTime() - currentTime);
+            const diff = Math.abs(event.parsedDate.getTime() - currentTime.getTime());
             if (diff < nearestDiff) {
                 nearestDiff = diff;
                 nearestIndex = index;
@@ -862,11 +939,10 @@ function updateInfoOverlayTexts() {
 
     if (columns[1]) {
         columns[1].querySelector('h2').textContent = t('infoOverlay.featuresTitle');
-        const features = columns[1].querySelectorAll('.info-features li');
-        features[0].textContent = t('infoOverlay.feature1');
-        features[1].textContent = t('infoOverlay.feature2');
-        features[2].textContent = t('infoOverlay.feature3');
-        features[3].textContent = t('infoOverlay.feature4');
+        const features = columns[1].querySelectorAll('.info-features li span');
+        if (features[0]) features[0].textContent = t('infoOverlay.feature1');
+        if (features[1]) features[1].textContent = t('infoOverlay.feature2');
+        if (features[2]) features[2].textContent = t('infoOverlay.feature3');
     }
 
     document.querySelector('.info-credits h3').textContent = t('infoOverlay.creditsTitle');
@@ -1184,4 +1260,25 @@ document.querySelector('.toggle-label-off').addEventListener('click', () => {
 document.querySelector('.toggle-label-on').addEventListener('click', () => {
     audioToggle.checked = true;
     audioToggle.dispatchEvent(new Event('change'));
+});
+
+// Image overlay handlers
+document.getElementById('event-image-container').addEventListener('click', () => {
+    const imageSrc = document.getElementById('event-image').src;
+    const imageCaption = document.getElementById('event-image-caption').textContent;
+
+    document.getElementById('overlay-image').src = imageSrc;
+    document.getElementById('overlay-image-caption').textContent = imageCaption;
+    document.getElementById('image-overlay').classList.remove('hidden');
+});
+
+document.getElementById('close-image-btn').addEventListener('click', () => {
+    document.getElementById('image-overlay').classList.add('hidden');
+});
+
+// Close image overlay when clicking on the background
+document.getElementById('image-overlay').addEventListener('click', (e) => {
+    if (e.target.id === 'image-overlay') {
+        document.getElementById('image-overlay').classList.add('hidden');
+    }
 });
