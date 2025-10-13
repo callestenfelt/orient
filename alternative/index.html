@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orient - WW2 Timeline</title>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Split Layout Container -->
+    <div id="app-container">
+        
+        <!-- Left Side: Map -->
+        <div id="map-section">
+            <div id="map"></div>
+            
+            <!-- Map Controls -->
+            <div id="map-controls">
+                <div id="top-left-controls">
+                    <!-- Year Display -->
+                    <div id="year-display">1946</div>
+
+                    <!-- Legend -->
+                    <div id="map-legend">
+                        <div class="legend-column">
+                            <div class="legend-item" data-territory="germany">
+                                <span class="legend-color" style="background: var(--map-germany);"></span>
+                                <span class="legend-label" data-sv="Tyskland" data-en="Germany">Tyskland</span>
+                            </div>
+                            <div class="legend-item" data-territory="germany-occ">
+                                <span class="legend-color" style="background: var(--map-germany-occ);"></span>
+                                <span class="legend-label" data-sv="Tyskland - ockuperat" data-en="Germany - Occupied">Tyskland - ockuperat</span>
+                            </div>
+                        </div>
+                        <div class="legend-column">
+                            <div class="legend-item" data-territory="italy">
+                                <span class="legend-color" style="background: var(--map-italy);"></span>
+                                <span class="legend-label" data-sv="Italien" data-en="Italy">Italien</span>
+                            </div>
+                            <div class="legend-item" data-territory="italy-occ">
+                                <span class="legend-color" style="background: var(--map-italy-occ);"></span>
+                                <span class="legend-label" data-sv="Italien - ockuperat" data-en="Italy - occupied">Italien - ockuperat</span>
+                            </div>
+                        </div>
+                        <div class="legend-column">
+                            <div class="legend-item" data-territory="axis">
+                                <span class="legend-color" style="background: var(--map-axis);"></span>
+                                <span class="legend-label" data-sv="Övriga axelmakter" data-en="Other Axis">Övriga axelmakter</span>
+                            </div>
+                            <div class="legend-item" data-territory="axis-occ">
+                                <span class="legend-color" style="background: var(--map-axis-occ);"></span>
+                                <span class="legend-label" data-sv="Övriga axelmakter - ockuperat" data-en="Other axis - occupied">Övriga axelmakter - ockuperat</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Zoom Controls -->
+                <div id="zoom-controls">
+                    <button id="zoom-in" class="zoom-btn" aria-label="Zoom in">
+                        <img src="gfx/plus.svg" alt="+">
+                    </button>
+                    <button id="zoom-out" class="zoom-btn" aria-label="Zoom out">
+                        <img src="gfx/minus.svg" alt="-">
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Side: Event Content -->
+        <div id="content-section">
+            <!-- Background gradient with event image -->
+            <div id="content-background"></div>
+
+            <div id="event-content">
+                <div id="event-date-label">1946 JUNI</div>
+                <h1 id="event-title">NOVEMBERPOGROMEN</h1>
+                
+                <div id="event-body">
+                    <div id="event-text"></div>
+                    <div id="event-image-wrapper">
+                        <div id="event-image-container">
+                            <img id="event-image" src="" alt="">
+                        </div>
+                        <p id="event-image-caption"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Timeline (Bottom) -->
+    <div id="timeline-container">
+        <button id="prev-btn" class="timeline-nav-btn" aria-label="Previous event">
+            <img src="gfx/angle.svg" alt="<">
+        </button>
+
+        <div id="timeline">
+            <div id="timeline-track"></div>
+            <div id="timeline-year-labels"></div>
+            <div id="timeline-markers"></div>
+            <div id="timeline-handle">
+                <img src="gfx/pointer.svg" alt="Handle" draggable="false">
+                <div id="timeline-tooltip" class="hidden">
+                    <div id="tooltip-date">JUNI 1946</div>
+                    <div id="tooltip-title">Pogromen i Kielce</div>
+                </div>
+            </div>
+        </div>
+
+        <button id="next-btn" class="timeline-nav-btn" aria-label="Next event">
+            <img src="gfx/angle.svg" alt=">" style="transform: scaleX(-1);">
+        </button>
+    </div>
+
+    <!-- Information Overlay -->
+    <div id="info-overlay" class="hidden">
+        <div id="info-content">
+            <div id="info-main-content">
+                <button id="close-info-btn-main" aria-label="Close information">×</button>
+                <h1 id="info-title">Om tidslinjen</h1>
+
+                <div id="info-columns">
+                    <div class="info-column">
+                        <h2>Syfte</h2>
+                        <p>Den här tidslinjen visar viktiga händelser under andra världskriget mellan 1938 och 1946. Genom att kombinera en interaktiv karta med historiska händelser kan du följa krigets progression och förstå hur gränser och kontrollerade områden förändrades över tid.</p>
+                        <p>Varje händelse är noggrant dokumenterad med text, bilder och geografisk placering för att ge en djupare förståelse av krigets omfattning och påverkan på Europa.</p>
+
+                        <button id="explore-timeline-btn" class="big-yellow-btn">Utforska tidslinjen</button>
+                    </div>
+
+                    <div class="info-column">
+                        <h2>Funktioner</h2>
+                        <ul class="info-features">
+                            <li>Använd pilarna eller dra i handtaget för att röra dig i tid</li>
+                            <li>Klicka på kartområden för att läsa mer om ländernas roll under kriget</li>
+                            <li>Klicka på händelsemarkörerna på kartan för att hoppa till den händelsen</li>
+                            <li>Växla mellan svenska och engelska med språkknappen</li>
+                        </ul>
+
+                        <div class="info-credits">
+                            <h3>Datakällor och krediteringar</h3>
+                            <p class="credits">
+                                <strong>Historiska gränser:</strong> European Borders 1938-1945 dataset från Stanford University.
+                                Copyright 2014 Stanford University. All rights reserved.
+                                <a href="http://www.stanford.edu/group/spatialhistory/" target="_blank" rel="noopener">The Spatial History Project</a>
+                            </p>
+                            <p class="credits">
+                                <a href="#" id="show-image-sources-link">Visa bildkällor</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="info-image-sources" class="hidden">
+                <div id="info-image-sources-header">
+                    <button id="back-to-info-btn" aria-label="Back to information">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M12 4L6 10L12 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Tillbaka
+                    </button>
+                    <h1 id="image-sources-title">Bildkällor</h1>
+                    <button id="close-info-btn" aria-label="Close information">×</button>
+                </div>
+                <div id="image-sources-columns"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Right Controls (fixed position, don't fade) -->
+    <div id="content-top-controls">
+        <!-- Audio Toggle Switch -->
+        <div class="toggle-switch-wrapper">
+            <span class="toggle-label toggle-label-off">Tal av</span>
+            <label class="toggle-switch" for="audio-toggle">
+                <input type="checkbox" id="audio-toggle" />
+                <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label toggle-label-on">Tal på</span>
+        </div>
+
+        <button id="help-btn" class="content-control-btn" aria-label="Help">
+            <img src="gfx/info.svg" alt="i">
+            <span>Information</span>
+        </button>
+
+        <button id="language-btn" class="content-control-btn" aria-label="Language">
+            <img src="gfx/globe.svg" alt="Globe">
+            <span>SV</span>
+        </button>
+    </div>
+
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+    <script src="app.js"></script>
+</body>
+</html>
