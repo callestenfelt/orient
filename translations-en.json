@@ -78,10 +78,9 @@
     "purposeText1": "This timeline shows important events during World War II between 1938 and 1946. By combining an interactive map with historical events, you can follow the progression of the war and understand how borders and controlled areas changed over time.",
     "purposeText2": "Each event is carefully documented with text, images, and geographic placement to provide a deeper understanding of the war's scope and impact on Europe.",
     "featuresTitle": "Features",
-    "feature1": "Use the arrows or drag the handle to move through time",
-    "feature2": "Click on map areas to learn more about countries' roles during the war",
-    "feature3": "Click on event markers on the map to jump to that event",
-    "feature4": "Switch between Swedish and English with the language button",
+    "feature1": "Use the arrows to go to the next event",
+    "feature2": "Click on images to view them larger",
+    "feature3": "Drag the handle to move through time",
     "creditsTitle": "Data Sources and Credits",
     "creditsLabel": "Historical borders:",
     "creditsText": "European Borders 1938-1945 dataset from Stanford University. Copyright 2014 Stanford University. All rights reserved."

@@ -80,8 +80,11 @@
                 <div id="event-body">
                     <div id="event-text"></div>
                     <div id="event-image-wrapper">
-                        <div id="event-image-container">
+                        <div id="event-image-container" class="clickable-image">
                             <img id="event-image" src="" alt="">
+                            <div class="image-zoom-icon">
+                                <img src="gfx/eye.svg" alt="View larger">
+                            </div>
                         </div>
                         <p id="event-image-caption"></p>
                     </div>
@@ -127,16 +130,15 @@
                         <p>Den här tidslinjen visar viktiga händelser under andra världskriget mellan 1938 och 1946. Genom att kombinera en interaktiv karta med historiska händelser kan du följa krigets progression och förstå hur gränser och kontrollerade områden förändrades över tid.</p>
                         <p>Varje händelse är noggrant dokumenterad med text, bilder och geografisk placering för att ge en djupare förståelse av krigets omfattning och påverkan på Europa.</p>
 
-                        <button id="explore-timeline-btn" class="big-yellow-btn">Utforska tidslinjen</button>
+                        <button id="explore-timeline-btn" class="big-yellow-btn"><span>Utforska tidslinjen</span></button>
                     </div>
 
                     <div class="info-column">
                         <h2>Funktioner</h2>
                         <ul class="info-features">
-                            <li>Använd pilarna eller dra i handtaget för att röra dig i tid</li>
-                            <li>Klicka på kartområden för att läsa mer om ländernas roll under kriget</li>
-                            <li>Klicka på händelsemarkörerna på kartan för att hoppa till den händelsen</li>
-                            <li>Växla mellan svenska och engelska med språkknappen</li>
+                            <li><img src="gfx/helpscr_next.svg" alt="" class="feature-icon"><span>Använd pilarna för att gå till nästa händelse</span></li>
+                            <li><img src="gfx/helpscr_eye.svg" alt="" class="feature-icon"><span>Klicka på bilder för att se dem större</span></li>
+                            <li><img src="gfx/helpscreen_handle.svg" alt="" class="feature-icon feature-icon-handle"><span>Dra i handtaget för att röra dig i tid</span></li>
                         </ul>
 
                         <div class="info-credits">
@@ -167,6 +169,15 @@
                 </div>
                 <div id="image-sources-columns"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- Image Overlay -->
+    <div id="image-overlay" class="hidden">
+        <button id="close-image-btn" aria-label="Close image">×</button>
+        <div id="image-overlay-content">
+            <img id="overlay-image" src="" alt="">
+            <p id="overlay-image-caption"></p>
         </div>
     </div>
 

@@ -78,10 +78,9 @@
     "purposeText1": "Den här tidslinjen visar viktiga händelser under andra världskriget mellan 1938 och 1946. Genom att kombinera en interaktiv karta med historiska händelser kan du följa krigets progression och förstå hur gränser och kontrollerade områden förändrades över tid.",
     "purposeText2": "Varje händelse är noggrant dokumenterad med text, bilder och geografisk placering för att ge en djupare förståelse av krigets omfattning och påverkan på Europa.",
     "featuresTitle": "Funktioner",
-    "feature1": "Använd pilarna eller dra i handtaget för att röra dig i tid",
-    "feature2": "Klicka på kartområden för att läsa mer om ländernas roll under kriget",
-    "feature3": "Klicka på händelsemarkörerna på kartan för att hoppa till den händelsen",
-    "feature4": "Växla mellan svenska och engelska med språkknappen",
+    "feature1": "Använd pilarna för att gå till nästa händelse",
+    "feature2": "Klicka på bilder för att se dem större",
+    "feature3": "Dra i handtaget för att röra dig i tid",
     "creditsTitle": "Datakällor och krediteringar",
     "creditsLabel": "Historiska gränser:",
     "creditsText": "European Borders 1938-1945 dataset från Stanford University. Copyright 2014 Stanford University. All rights reserved."
