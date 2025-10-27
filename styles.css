@@ -415,10 +415,10 @@ body {
     z-index: 0;
 }
 
-/* Month labels above timeline */
+/* Month labels below timeline */
 #timeline-month-labels {
     position: absolute;
-    top: 5px;
+    top: 25px;
     left: 0;
     right: 0;
     height: 20px;
@@ -436,10 +436,10 @@ body {
 
 #timeline-track {
     position: absolute;
-    top: 35px;
+    top: 15px;
     left: 0;
     right: 0;
-    height: 3px;
+    height: 1px;
     background: var(--color-dark-blue);
     z-index: 1;
 }
@@ -524,7 +524,7 @@ body {
 
 #timeline-markers {
     position: absolute;
-    top: 35px;
+    top: 15px;
     left: 0;
     right: 0;
     height: 10px;
@@ -639,7 +639,7 @@ body {
 
 #timeline-handle {
     position: absolute;
-    bottom: calc(100% - 35px);
+    bottom: calc(100% - 15px);
     left: 50%;
     transform: translateX(-50%);
     cursor: grab;
