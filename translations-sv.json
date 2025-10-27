@@ -16,7 +16,8 @@
       "italy": "Italien",
       "italyOcc": "Italien - ockuperat",
       "axis": "Övriga axelmakter",
-      "axisOcc": "Övriga axelmakter - ockuperat"
+      "axisOcc": "Övriga axelmakter - ockuperat",
+      "sweden": "Sverige"
     },
     "timeline": {
       "year": "År"
@@ -66,6 +67,11 @@
       "title": "Ockuperat av övriga axelmakter",
       "text": "Områden som kontrollerades av andra axelmakter än Tyskland och Italien, främst Rumänien, Ungern och Bulgarien.",
       "imageCaption": "Észak-Erdél -- Romania, Transylvania"
+    },
+    "sweden": {
+      "title": "Sverige",
+      "text": "Sverige förblev neutralt under andra världskriget men spelade en viktig roll genom att ta emot flyktingar, särskilt judiska barn och danska judar. Landet hjälpte också till med humanitära insatser mot krigets slut.",
+      "imageCaption": "Sverige under andra världskriget"
     },
     "disclaimer": "Kartan fokuserar på Europa under andra världskriget och visar hur gränser och ockuperade områden förändrades mellan 1938 och 1946. Händelser utanför Europa ingår inte."
   },

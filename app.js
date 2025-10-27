@@ -434,6 +434,66 @@ async function updateBorders(date) {
     }
 }
 
+// Load and display Sweden overlay
+async function loadSwedenOverlay() {
+    try {
+        const response = await fetch('geojson/se.json');
+        const data = await response.json();
+
+        // Remove CRS property if it exists
+        delete data.crs;
+
+        if (map.getSource('sweden')) {
+            map.getSource('sweden').setData(data);
+        } else {
+            map.addSource('sweden', {
+                type: 'geojson',
+                data: data
+            });
+
+            map.addLayer({
+                id: 'sweden-fill',
+                type: 'fill',
+                source: 'sweden',
+                paint: {
+                    'fill-color': getCSSVariable('--map-sweden'),
+                    'fill-opacity': 0.4
+                }
+            }, 'waterway-label');
+
+            map.addLayer({
+                id: 'sweden-outline',
+                type: 'line',
+                source: 'sweden',
+                paint: {
+                    'line-color': '#6BA9C4',
+                    'line-width': 1,
+                    'line-opacity': 0
+                }
+            }, 'waterway-label');
+
+            // Add hover and click interactivity for Sweden
+            map.on('mouseenter', 'sweden-fill', () => {
+                map.getCanvas().style.cursor = 'pointer';
+                map.setPaintProperty('sweden-fill', 'fill-opacity', 0.6);
+                map.setPaintProperty('sweden-outline', 'line-opacity', 0.8);
+            });
+
+            map.on('mouseleave', 'sweden-fill', () => {
+                map.getCanvas().style.cursor = '';
+                map.setPaintProperty('sweden-fill', 'fill-opacity', 0.4);
+                map.setPaintProperty('sweden-outline', 'line-opacity', 0);
+            });
+
+            map.on('click', 'sweden-fill', () => {
+                showTerritoryInfo('sweden');
+            });
+        }
+    } catch (error) {
+        console.log('Sweden GeoJSON file not found:', error);
+    }
+}
+
 // Determine territory type from feature properties
 function getTerritoryType(feature) {
     const name = feature.properties.Name;
@@ -465,16 +525,54 @@ function getTerritoryType(feature) {
 
 // Setup territory click and hover interactions
 function setupTerritoryInteractivity() {
-    // Change cursor on hover
-    map.on('mouseenter', 'borders-fill', () => {
-        map.getCanvas().style.cursor = 'pointer';
+    // Add hover effect - only for territories in the legend
+    let hoveredStateId = null;
+
+    map.on('mousemove', 'borders-fill', (e) => {
+        if (e.features.length > 0) {
+            const feature = e.features[0];
+            const territoryType = getTerritoryType(feature);
+
+            // Only apply hover if this is a legend territory
+            if (territoryType) {
+                map.getCanvas().style.cursor = 'pointer';
+
+                if (hoveredStateId !== null) {
+                    map.setFeatureState(
+                        { source: 'borders', id: hoveredStateId },
+                        { hover: false }
+                    );
+                }
+                hoveredStateId = feature.id;
+                map.setFeatureState(
+                    { source: 'borders', id: hoveredStateId },
+                    { hover: true }
+                );
+            } else {
+                map.getCanvas().style.cursor = '';
+                if (hoveredStateId !== null) {
+                    map.setFeatureState(
+                        { source: 'borders', id: hoveredStateId },
+                        { hover: false }
+                    );
+                    hoveredStateId = null;
+                }
+            }
+        }
     });
 
     map.on('mouseleave', 'borders-fill', () => {
         map.getCanvas().style.cursor = '';
+        if (hoveredStateId !== null) {
+            map.setFeatureState(
+                { source: 'borders', id: hoveredStateId },
+                { hover: false }
+            );
+        }
+        hoveredStateId = null;
     });
 
-    // Handle territory clicks
+    // Handle territory clicks - only for legend territories
     map.on('click', 'borders-fill', (e) => {
         if (e.features.length > 0) {
             const feature = e.features[0];
@@ -484,35 +582,6 @@ function setupTerritoryInteractivity() {
                 showTerritoryInfo(territoryType);
             }
         }
-    });
-
-    // Add hover effect - brighten the territory
-    let hoveredStateId = null;
-
-    map.on('mousemove', 'borders-fill', (e) => {
-        if (e.features.length > 0) {
-            if (hoveredStateId !== null) {
-                map.setFeatureState(
-                    { source: 'borders', id: hoveredStateId },
-                    { hover: false }
-                );
-            }
-            hoveredStateId = e.features[0].id;
-            map.setFeatureState(
-                { source: 'borders', id: hoveredStateId },
-                { hover: true }
-            );
-        }
-    });
-
-    map.on('mouseleave', 'borders-fill', () => {
-        if (hoveredStateId !== null) {
-            map.setFeatureState(
-                { source: 'borders', id: hoveredStateId },
-                { hover: false }
-            );
-        }
-        hoveredStateId = null;
     });
 }
 
@@ -566,29 +635,7 @@ function createEventMarkers() {
     eventMarkers.forEach(marker => marker.remove());
     eventMarkers = [];
 
-    // Add inactive markers first
-    events.forEach((event, index) => {
-        if (index === currentEventIndex) return; // Skip active marker for now
-
-        const el = document.createElement('div');
-        el.className = 'event-marker';
-
-        el.addEventListener('click', (e) => {
-            e.stopPropagation();
-            goToEvent(index);
-        });
-
-        const marker = new mapboxgl.Marker({
-            element: el,
-            anchor: 'center'
-        })
-            .setLngLat(event.coordinates)
-            .addTo(map);
-
-        eventMarkers.push(marker);
-    });
-
-    // Add active marker last so it appears on top
+    // Only add active marker (remove inactive markers)
     if (currentEventIndex >= 0 && currentEventIndex < events.length) {
         const event = events[currentEventIndex];
         const el = document.createElement('div');
@@ -759,10 +806,41 @@ function goToEvent(index) {
     createTimelineYearLabels();
     updateTimelineHandle();
 
+    // Calculate distance-based duration for smoother long transitions
+    const currentCenter = map.getCenter();
+    const targetCenter = event.coordinates;
+
+    // Calculate distance using Haversine formula approximation
+    const lat1 = currentCenter.lat * Math.PI / 180;
+    const lat2 = targetCenter[1] * Math.PI / 180;
+    const lng1 = currentCenter.lng * Math.PI / 180;
+    const lng2 = targetCenter[0] * Math.PI / 180;
+
+    const dLat = lat2 - lat1;
+    const dLng = lng2 - lng1;
+
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1) * Math.cos(lat2) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = c * 6371; // Earth radius in km
+
+    // Scale duration based on distance: min 2s, max 8s for very long distances
+    // Short distances (< 500km): 2-3 seconds
+    // Medium distances (500-2000km): 3-5 seconds
+    // Long distances (> 2000km): 5-8 seconds
+    const minDuration = 2000;
+    const maxDuration = 8000;
+    const duration = Math.min(maxDuration, minDuration + (distance / 500) * 1000);
+
     map.flyTo({
         center: event.coordinates,
         zoom: 5,
-        duration: 1000
+        duration: duration,
+        easing: function(t) {
+            // Smoother easing function (ease-in-out cubic)
+            return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        }
     });
 }
 // Convert timeline position (0-100%) to a date (respects year boundaries)
@@ -882,6 +960,9 @@ map.on('load', async () => {
     // Update all UI texts
     updateUITexts();
 
+    // Load Sweden overlay
+    await loadSwedenOverlay();
+
     await loadEvents();
     createTimelineYearLabels();
     createTimelineMarkers();
@@ -995,6 +1076,8 @@ async function switchLanguage() {
 
     // Change style and restore state
     map.once('styledata', () => {
+        // Re-add Sweden overlay
+        loadSwedenOverlay();
         // Re-add borders after style loads
         if (events.length > 0) {
             updateBorders(events[currentEventIndex].parsedDate);

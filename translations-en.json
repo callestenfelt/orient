@@ -16,7 +16,8 @@
       "italy": "Italy",
       "italyOcc": "Italy - occupied",
       "axis": "Other Axis",
-      "axisOcc": "Other axis - occupied"
+      "axisOcc": "Other axis - occupied",
+      "sweden": "Sweden"
     },
     "timeline": {
       "year": "Year"
@@ -66,6 +67,11 @@
       "title": "Occupied by other Axis powers",
       "text": "Areas controlled by Axis powers other than Germany and Italy, primarily Romania, Hungary, and Bulgaria.",
       "imageCaption": "Észak-Erdél -- Romania, Transylvania"
+    },
+    "sweden": {
+      "title": "Sweden",
+      "text": "Sweden remained neutral during World War II but played an important role by receiving refugees, particularly Jewish children and Danish Jews. The country also helped with humanitarian efforts towards the end of the war.",
+      "imageCaption": "Sweden during World War II"
     },
     "disclaimer": "The map focuses on Europe during World War II and shows how borders and occupied areas changed between 1938 and 1946. Events outside Europe are not included."
   },

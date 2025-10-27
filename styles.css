@@ -20,6 +20,7 @@
     --map-italy-occ: #CCE9DA;
     --map-axis: #E8D8AD;
     --map-axis-occ: #F5EFDE;
+    --map-sweden: #ADD6E8;
 
     /* UI Colors */
     --color-dark-blue: #192238;
@@ -92,7 +93,7 @@ body {
 
 #map-legend {
     background: var(--color-white);
-    padding: 11px 10px;
+    padding: 11px 20px 11px 10px;
     border-radius: 6px;
     box-shadow: 0 0 40px -10px rgba(0,0,0,0.3),
                 0 0 25px -15px rgba(0,0,0,0.2);
@@ -254,6 +255,7 @@ body {
     background-repeat: no-repeat;
     opacity: 0.1;
     z-index: 1;
+    display: none;
 }
 
 #event-content {
