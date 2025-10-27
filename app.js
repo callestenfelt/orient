@@ -11,6 +11,8 @@ let timelineRect = null;
 let currentLanguage = 'sv';
 let isShowingTerritoryInfo = false;
 let translations = null;
+let currentYear = 1938;
+let isAnimating = false;
 
 // Load translations
 async function loadTranslations(lang) {
@@ -692,98 +694,93 @@ function updateEventContent(event) {
     }, 300);
 }
 
-// Create timeline year labels and ticks
-function createTimelineYearLabels() {
-    const container = document.getElementById('timeline-year-labels');
+// Create year pill buttons (1933-1948)
+function createYearPills() {
+    const container = document.getElementById('timeline-year-pills');
     container.innerHTML = '';
 
-    if (events.length === 0) return;
+    for (let year = 1933; year <= 1948; year++) {
+        const pill = document.createElement('button');
+        pill.className = 'timeline-year-pill';
+        pill.textContent = year;
+        pill.setAttribute('data-year', year);
 
-    const minDate = events[0].parsedDate;
-    const maxDate = events[events.length - 1].parsedDate;
-    const startYear = minDate.getFullYear();
-    const endYear = maxDate.getFullYear();
+        if (year === currentYear) {
+            pill.classList.add('active');
+        }
 
-    // Calculate all years to display (inclusive)
-    const years = [];
-    for (let year = startYear; year <= endYear; year++) {
-        years.push(year);
+        pill.addEventListener('click', () => {
+            if (year !== currentYear && !isAnimating) {
+                switchToYear(year);
+            }
+        });
+
+        container.appendChild(pill);
     }
-    const totalYears = years.length;
-
-    // Create year labels and ticks evenly distributed
-    for (let i = 0; i < totalYears; i++) {
-        const year = years[i];
-        const positionStart = (i / totalYears) * 100;
-        const positionEnd = ((i + 1) / totalYears) * 100;
-        const positionCenter = (positionStart + positionEnd) / 2;
-
-        // Create tick mark at year boundary
-        const tick = document.createElement('div');
-        tick.className = 'timeline-year-tick';
-        tick.style.left = positionStart + '%';
-        container.appendChild(tick);
-
-        // Create year label centered in the year section
-        const label = document.createElement('div');
-        label.className = 'timeline-year-label';
-        label.textContent = year;
-        label.style.left = positionCenter + '%';
-        label.style.transform = 'translateX(-50%)';
-        container.appendChild(label);
-    }
-
-    // Add final tick at the end
-    const finalTick = document.createElement('div');
-    finalTick.className = 'timeline-year-tick';
-    finalTick.style.left = '100%';
-    container.appendChild(finalTick);
 }
 
-// Calculate timeline position for a date (respects year boundaries)
-function getTimelinePosition(date) {
-    const minDate = events[0].parsedDate;
-    const maxDate = events[events.length - 1].parsedDate;
-    const startYear = minDate.getFullYear();
-    const endYear = maxDate.getFullYear();
-    const totalYears = endYear - startYear + 1;
+// Create month labels
+function createMonthLabels() {
+    const container = document.getElementById('timeline-month-labels');
+    container.innerHTML = '';
 
+    const monthKeys = ['januari', 'februari', 'mars', 'april', 'maj', 'juni',
+                       'juli', 'augusti', 'september', 'oktober', 'november', 'december'];
+
+    monthKeys.forEach(monthKey => {
+        const label = document.createElement('div');
+        label.className = 'timeline-month-label';
+        label.textContent = translations ? t('ui.months.' + monthKey).toLowerCase() : monthKey;
+        container.appendChild(label);
+    });
+}
+
+// Create timeline year labels and ticks (deprecated - kept for compatibility)
+function createTimelineYearLabels() {
+    // This function is now replaced by createYearPills and createMonthLabels
+    createYearPills();
+    createMonthLabels();
+}
+
+// Calculate timeline position for a date within current year (0-100%)
+function getTimelinePosition(date) {
     const eventYear = date.getFullYear();
-    const yearIndex = eventYear - startYear;
 
     // Calculate position within the year (0 to 1)
     const yearStart = new Date(eventYear, 0, 1);
     const yearEnd = new Date(eventYear, 11, 31, 23, 59, 59);
     const yearProgress = (date - yearStart) / (yearEnd - yearStart);
 
-    // Calculate overall position
-    const yearSectionWidth = 100 / totalYears;
-    const position = (yearIndex * yearSectionWidth) + (yearProgress * yearSectionWidth);
-
-    return position;
+    // Return position as percentage (0-100)
+    return yearProgress * 100;
 }
 
-// Create timeline markers
+// Create timeline markers (only for current year)
 function createTimelineMarkers() {
     const container = document.getElementById('timeline-markers');
     container.innerHTML = '';
 
+    // Filter events for current year only
     events.forEach((event, index) => {
-        const marker = document.createElement('div');
-        marker.className = 'timeline-marker';
+        const eventYear = event.parsedDate.getFullYear();
 
-        const position = getTimelinePosition(event.parsedDate);
-        marker.style.left = position + '%';
+        if (eventYear === currentYear) {
+            const marker = document.createElement('div');
+            marker.className = 'timeline-marker';
 
-        if (index === currentEventIndex) {
-            marker.classList.add('active');
+            const position = getTimelinePosition(event.parsedDate);
+            marker.style.left = position + '%';
+
+            if (index === currentEventIndex) {
+                marker.classList.add('active');
+            }
+
+            marker.addEventListener('click', () => {
+                goToEvent(index);
+            });
+
+            container.appendChild(marker);
         }
-
-        marker.addEventListener('click', () => {
-            goToEvent(index);
-        });
-
-        container.appendChild(marker);
     });
 }
 
@@ -794,17 +791,57 @@ function updateTimelineHandle() {
     handle.style.left = position + '%';
 }
 
+// Switch to a different year with animation
+function switchToYear(year, skipAnimation = false) {
+    const oldYear = currentYear;
+    currentYear = year;
+
+    // Update pill active states
+    document.querySelectorAll('.timeline-year-pill').forEach(pill => {
+        if (parseInt(pill.getAttribute('data-year')) === year) {
+            pill.classList.add('active');
+        } else {
+            pill.classList.remove('active');
+        }
+    });
+
+    if (!skipAnimation && oldYear !== year) {
+        // Add slide animation
+        isAnimating = true;
+        const markersContainer = document.getElementById('timeline-markers');
+        const animationClass = year > oldYear ? 'slide-left' : 'slide-right';
+
+        markersContainer.classList.add(animationClass);
+
+        setTimeout(() => {
+            markersContainer.classList.remove(animationClass);
+            isAnimating = false;
+        }, 400);
+    }
+
+    // Update markers and handle
+    createTimelineMarkers();
+    updateTimelineHandle();
+}
+
 // Go to specific event
-function goToEvent(index) {
+function goToEvent(index, withYearSwitch = false) {
     currentEventIndex = index;
     const event = events[index];
+    const eventYear = event.parsedDate.getFullYear();
+
+    // Switch year if needed
+    if (eventYear !== currentYear) {
+        switchToYear(eventYear, !withYearSwitch);
+    }
 
     updateEventContent(event);
     updateBorders(event.parsedDate);
     createEventMarkers();
-    createTimelineMarkers();
     createTimelineYearLabels();
-    updateTimelineHandle();
+    if (eventYear === currentYear) {
+        updateTimelineHandle();
+    }
 
     // Calculate distance-based duration for smoother long transitions
     const currentCenter = map.getCenter();
@@ -843,21 +880,12 @@ function goToEvent(index) {
         }
     });
 }
-// Convert timeline position (0-100%) to a date (respects year boundaries)
+// Convert timeline position (0-100%) to a date within current year
 function getDateFromTimelinePosition(percent) {
-    const minDate = events[0].parsedDate;
-    const maxDate = events[events.length - 1].parsedDate;
-    const startYear = minDate.getFullYear();
-    const endYear = maxDate.getFullYear();
-    const totalYears = endYear - startYear + 1;
+    const yearProgress = percent / 100;
 
-    const yearSectionWidth = 100 / totalYears;
-    const yearIndex = Math.floor(percent / yearSectionWidth);
-    const yearProgress = (percent % yearSectionWidth) / yearSectionWidth;
-
-    const targetYear = startYear + yearIndex;
-    const yearStart = new Date(targetYear, 0, 1);
-    const yearEnd = new Date(targetYear, 11, 31, 23, 59, 59);
+    const yearStart = new Date(currentYear, 0, 1);
+    const yearEnd = new Date(currentYear, 11, 31, 23, 59, 59);
     const yearDuration = yearEnd - yearStart;
 
     return new Date(yearStart.getTime() + (yearDuration * yearProgress));
@@ -883,13 +911,17 @@ function initTimelineDragging() {
 
         const currentTime = getDateFromTimelinePosition(percent);
 
+        // Only consider events from current year
         let nearestIndex = 0;
         let nearestDiff = Infinity;
+        let markerIndex = 0;
         events.forEach((event, index) => {
-            const diff = Math.abs(event.parsedDate.getTime() - currentTime.getTime());
-            if (diff < nearestDiff) {
-                nearestDiff = diff;
-                nearestIndex = index;
+            if (event.parsedDate.getFullYear() === currentYear) {
+                const diff = Math.abs(event.parsedDate.getTime() - currentTime.getTime());
+                if (diff < nearestDiff) {
+                    nearestDiff = diff;
+                    nearestIndex = index;
+                }
             }
         });
 
@@ -899,8 +931,16 @@ function initTimelineDragging() {
         document.getElementById('tooltip-date').textContent = formatEventDate(event.date);
         document.getElementById('tooltip-title').textContent = currentLanguage === 'sv' ? event.title_sv : event.title_en;
 
-        document.querySelectorAll('.timeline-marker').forEach((marker, index) => {
-            marker.classList.toggle('active', index === nearestIndex);
+        // Update marker active states
+        const markers = document.querySelectorAll('.timeline-marker');
+        let currentYearMarkerIndex = 0;
+        events.forEach((evt, idx) => {
+            if (evt.parsedDate.getFullYear() === currentYear) {
+                if (markers[currentYearMarkerIndex]) {
+                    markers[currentYearMarkerIndex].classList.toggle('active', idx === nearestIndex);
+                }
+                currentYearMarkerIndex++;
+            }
         });
     });
 
@@ -912,13 +952,16 @@ function initTimelineDragging() {
         const handleLeft = parseFloat(handle.style.left);
         const currentTime = getDateFromTimelinePosition(handleLeft);
 
+        // Only consider events from current year
         let nearestIndex = 0;
         let nearestDiff = Infinity;
         events.forEach((event, index) => {
-            const diff = Math.abs(event.parsedDate.getTime() - currentTime.getTime());
-            if (diff < nearestDiff) {
-                nearestDiff = diff;
-                nearestIndex = index;
+            if (event.parsedDate.getFullYear() === currentYear) {
+                const diff = Math.abs(event.parsedDate.getTime() - currentTime.getTime());
+                if (diff < nearestDiff) {
+                    nearestDiff = diff;
+                    nearestIndex = index;
+                }
             }
         });
 
@@ -929,13 +972,13 @@ function initTimelineDragging() {
 // Navigation buttons
 document.getElementById('prev-btn').addEventListener('click', () => {
     if (currentEventIndex > 0) {
-        goToEvent(currentEventIndex - 1);
+        goToEvent(currentEventIndex - 1, true);
     }
 });
 
 document.getElementById('next-btn').addEventListener('click', () => {
     if (currentEventIndex < events.length - 1) {
-        goToEvent(currentEventIndex + 1);
+        goToEvent(currentEventIndex + 1, true);
     }
 });
 
@@ -964,6 +1007,12 @@ map.on('load', async () => {
     await loadSwedenOverlay();
 
     await loadEvents();
+
+    // Set current year to first event's year
+    if (events.length > 0) {
+        currentYear = events[0].parsedDate.getFullYear();
+    }
+
     createTimelineYearLabels();
     createTimelineMarkers();
     initTimelineDragging();

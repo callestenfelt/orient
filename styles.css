@@ -394,18 +394,81 @@ body {
 #timeline {
     flex: 1;
     position: relative;
-    height: 60px;
+    height: 80px;
     margin: 0 10px;
     overflow: visible;
 }
 
+/* Month labels above timeline */
+#timeline-month-labels {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.timeline-month-label {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--color-dark-blue);
+    text-transform: lowercase;
+}
+
+/* Year pills below timeline */
+#timeline-year-pills {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 35px;
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+}
+
+#timeline-year-pills::-webkit-scrollbar {
+    display: none;
+}
+
+.timeline-year-pill {
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: var(--color-dark-blue);
+    color: var(--color-white);
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.timeline-year-pill:hover {
+    background: var(--color-dark-blue-lighter);
+}
+
+.timeline-year-pill.active {
+    background: var(--color-white);
+    color: var(--color-dark-blue);
+    border-radius: 20px 20px 0 0;
+    position: relative;
+}
+
 #timeline-track {
     position: absolute;
-    top: 20px;
+    top: 30px;
     left: 0;
     right: 0;
     height: 3px;
-    background: var(--color-dark-blue);
+    background: var(--color-white);
 }
 
 #timeline-year-labels {
@@ -434,10 +497,33 @@ body {
 
 #timeline-markers {
     position: absolute;
-    top: 20px;
+    top: 30px;
     left: 0;
     right: 0;
     height: 10px;
+    transition: transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+#timeline-markers.slide-left {
+    animation: slideLeft 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+#timeline-markers.slide-right {
+    animation: slideRight 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+@keyframes slideLeft {
+    0% { transform: translateX(0); opacity: 1; }
+    50% { transform: translateX(-100%); opacity: 0; }
+    51% { transform: translateX(100%); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideRight {
+    0% { transform: translateX(0); opacity: 1; }
+    50% { transform: translateX(100%); opacity: 0; }
+    51% { transform: translateX(-100%); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
 }
 
 .timeline-marker {
@@ -525,7 +611,7 @@ body {
 
 #timeline-handle {
     position: absolute;
-    bottom: calc(100% - 20px);
+    bottom: calc(100% - 30px);
     left: 50%;
     transform: translateX(-50%);
     cursor: grab;
@@ -535,7 +621,7 @@ body {
     -moz-user-select: none;
     -ms-user-select: none;
     touch-action: none;
-    transition: filter 0.3s ease;
+    transition: left 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), filter 0.3s ease;
 }
 
 #timeline-handle:hover {
