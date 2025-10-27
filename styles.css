@@ -358,9 +358,9 @@ body {
     left: 0;
     right: 0;
     height: 100px;
-    background: var(--color-white);
+    background: #EFEDEA;
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     padding: 0 20px;
     gap: 20px;
     box-shadow: 0 0 40px -10px rgba(0,0,0,0.3),
@@ -380,6 +380,8 @@ body {
     align-items: center;
     justify-content: center;
     transition: background 0.3s ease;
+    margin-bottom: 20px;
+    flex-shrink: 0;
 }
 
 .timeline-nav-btn img {
@@ -394,20 +396,35 @@ body {
 #timeline {
     flex: 1;
     position: relative;
-    height: 80px;
+    height: 100px;
     margin: 0 10px;
     overflow: visible;
+    display: flex;
+    flex-direction: column;
+}
+
+/* White top section for timeline track and month labels */
+#timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -20px;
+    right: -20px;
+    height: 60px;
+    background: var(--color-white);
+    z-index: 0;
 }
 
 /* Month labels above timeline */
 #timeline-month-labels {
     position: absolute;
-    top: 0;
+    top: 5px;
     left: 0;
     right: 0;
     height: 20px;
     display: flex;
     justify-content: space-between;
+    z-index: 2;
 }
 
 .timeline-month-label {
@@ -417,20 +434,32 @@ body {
     text-transform: lowercase;
 }
 
-/* Year pills below timeline */
+#timeline-track {
+    position: absolute;
+    top: 35px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--color-dark-blue);
+    z-index: 1;
+}
+
+/* Year pills in beige bottom section */
 #timeline-year-pills {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 35px;
+    height: 40px;
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 6px;
     flex-wrap: nowrap;
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none;
+    z-index: 1;
 }
 
 #timeline-year-pills::-webkit-scrollbar {
@@ -449,6 +478,9 @@ body {
     white-space: nowrap;
     transition: all 0.2s ease;
     flex-shrink: 0;
+    height: 35px;
+    display: flex;
+    align-items: center;
 }
 
 .timeline-year-pill:hover {
@@ -460,15 +492,10 @@ body {
     color: var(--color-dark-blue);
     border-radius: 20px 20px 0 0;
     position: relative;
-}
-
-#timeline-track {
-    position: absolute;
-    top: 30px;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: var(--color-white);
+    height: 55px;
+    align-items: flex-end;
+    padding-bottom: 10px;
+    z-index: 3;
 }
 
 #timeline-year-labels {
@@ -497,11 +524,12 @@ body {
 
 #timeline-markers {
     position: absolute;
-    top: 30px;
+    top: 35px;
     left: 0;
     right: 0;
     height: 10px;
     transition: transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+    z-index: 2;
 }
 
 #timeline-markers.slide-left {
@@ -611,7 +639,7 @@ body {
 
 #timeline-handle {
     position: absolute;
-    bottom: calc(100% - 30px);
+    bottom: calc(100% - 35px);
     left: 50%;
     transform: translateX(-50%);
     cursor: grab;
