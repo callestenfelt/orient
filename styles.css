@@ -98,7 +98,7 @@ body {
     box-shadow: 0 0 40px -10px rgba(0,0,0,0.3),
                 0 0 25px -15px rgba(0,0,0,0.2);
     display: flex;
-    gap: 30px;
+    gap: 15px;
 }
 
 .legend-column {
@@ -381,18 +381,29 @@ body {
 }
 
 .timeline-nav-btn {
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     background: var(--color-primary);
-    border: none;
+    border: 4px solid var(--color-white);
     border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: background 0.3s ease;
-    margin-bottom: 20px;
     flex-shrink: 0;
+    position: absolute;
+    top: -10px;
+    z-index: 10;
+    box-sizing: border-box;
+}
+
+#prev-btn {
+    left: 20px;
+}
+
+#next-btn {
+    right: 20px;
 }
 
 .timeline-nav-btn img {
@@ -408,7 +419,7 @@ body {
     flex: 1;
     position: relative;
     height: 100px;
-    margin: 0 10px;
+    margin: 0 110px;
     overflow: visible;
     display: flex;
     flex-direction: column;
@@ -425,15 +436,15 @@ body {
     display: flex;
     justify-content: space-between;
     z-index: 2;
-    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition: transform 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 #timeline-month-labels.slide-left {
-    animation: slideLeft 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: slideLeft 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 #timeline-month-labels.slide-right {
-    animation: slideRight 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: slideRight 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .timeline-month-label {
@@ -459,16 +470,17 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 40px;
+    height: 50px;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 6px;
+    gap: 10px;
     flex-wrap: nowrap;
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none;
     z-index: 1;
+    padding: 0 120px;
 }
 
 #timeline-year-pills::-webkit-scrollbar {
@@ -490,20 +502,35 @@ body {
     height: 35px;
     display: flex;
     align-items: center;
+    position: relative;
 }
 
-.timeline-year-pill:hover {
-    background: var(--color-dark-blue-lighter);
+.timeline-year-pill::after {
+    content: '';
+    position: absolute;
+    bottom: 6px;
+    left: 16px;
+    right: 16px;
+    height: 2px;
+    background: var(--color-white);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.timeline-year-pill:hover::after {
+    transform: scaleX(1);
 }
 
 .timeline-year-pill.active {
     background: var(--color-white);
     color: var(--color-dark-blue);
-    border-radius: 20px 20px 0 0;
+    border-radius: 0 0 20px 20px;
     position: relative;
-    height: 55px;
-    align-items: flex-end;
-    padding-bottom: 10px;
+    height: 60px;
+    align-items: center;
+    bottom: 10px;
+    padding-top: 25px;
     z-index: 3;
 }
 
@@ -537,29 +564,29 @@ body {
     left: 0;
     right: 0;
     height: 10px;
-    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition: transform 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     z-index: 2;
 }
 
 #timeline-markers.slide-left {
-    animation: slideLeft 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: slideLeft 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 #timeline-markers.slide-right {
-    animation: slideRight 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: slideRight 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 @keyframes slideLeft {
     0% { transform: translateX(0); opacity: 1; }
-    45% { transform: translateX(-100%); opacity: 0; }
-    55% { transform: translateX(100%); opacity: 0; }
+    50% { transform: translateX(-100%); opacity: 0; }
+    50.01% { transform: translateX(100%); opacity: 0; }
     100% { transform: translateX(0); opacity: 1; }
 }
 
 @keyframes slideRight {
     0% { transform: translateX(0); opacity: 1; }
-    45% { transform: translateX(100%); opacity: 0; }
-    55% { transform: translateX(-100%); opacity: 0; }
+    50% { transform: translateX(100%); opacity: 0; }
+    50.01% { transform: translateX(-100%); opacity: 0; }
     100% { transform: translateX(0); opacity: 1; }
 }
 
@@ -658,6 +685,10 @@ body {
     -moz-user-select: none;
     -ms-user-select: none;
     touch-action: none;
+    transition: filter 0.3s ease;
+}
+
+#timeline-handle.animating {
     transition: left 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), filter 0.3s ease;
 }
 

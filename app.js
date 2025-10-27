@@ -618,7 +618,8 @@ function showTerritoryInfo(territoryType) {
             'italy': 'gfx/images/italy.webp',
             'italy-occ': 'gfx/images/italy_occ.webp',
             'axis': 'gfx/images/axis.webp',
-            'axis-occ': 'gfx/images/axis_occ.webp'
+            'axis-occ': 'gfx/images/axis_occ.webp',
+            'sweden': 'gfx/images/27.-Roda-korset_tidslinje_evakuera-alla.webp'
         };
         const imagePath = imageMap[territoryType];
 
@@ -760,33 +761,58 @@ function createTimelineMarkers() {
     const container = document.getElementById('timeline-markers');
     container.innerHTML = '';
 
-    // Filter events for current year only
+    const minDistance = 8; // Minimum distance in pixels
+    const containerWidth = container.offsetWidth || 1000; // Fallback width
+    const markerPositions = []; // Track adjusted positions
+
+    // Filter events for current year and calculate positions
+    const currentYearEvents = [];
     events.forEach((event, index) => {
         const eventYear = event.parsedDate.getFullYear();
-
         if (eventYear === currentYear) {
-            const marker = document.createElement('div');
-            marker.className = 'timeline-marker';
-
             const position = getTimelinePosition(event.parsedDate);
-            marker.style.left = position + '%';
-
-            if (index === currentEventIndex) {
-                marker.classList.add('active');
-            }
-
-            marker.addEventListener('click', () => {
-                goToEvent(index);
-            });
-
-            container.appendChild(marker);
+            currentYearEvents.push({ event, index, position });
         }
+    });
+
+    // Adjust positions to maintain minimum distance
+    currentYearEvents.forEach((item, i) => {
+        let adjustedPosition = item.position;
+        const pixelPosition = (adjustedPosition / 100) * containerWidth;
+
+        // Check against previous markers
+        for (let j = 0; j < markerPositions.length; j++) {
+            const prevPixelPos = (markerPositions[j] / 100) * containerWidth;
+            if (Math.abs(pixelPosition - prevPixelPos) < minDistance) {
+                // Adjust position to maintain minimum distance
+                const newPixelPos = prevPixelPos + minDistance;
+                adjustedPosition = (newPixelPos / containerWidth) * 100;
+            }
+        }
+
+        markerPositions.push(adjustedPosition);
+
+        // Create marker
+        const marker = document.createElement('div');
+        marker.className = 'timeline-marker';
+        marker.style.left = adjustedPosition + '%';
+
+        if (item.index === currentEventIndex) {
+            marker.classList.add('active');
+        }
+
+        marker.addEventListener('click', () => {
+            goToEvent(item.index);
+        });
+
+        container.appendChild(marker);
     });
 }
 
 // Update timeline handle position
 function updateTimelineHandle() {
     const handle = document.getElementById('timeline-handle');
+    handle.classList.add('animating');
     const position = getTimelinePosition(events[currentEventIndex].parsedDate);
     handle.style.left = position + '%';
 }
@@ -819,7 +845,7 @@ function switchToYear(year, skipAnimation = false) {
             markersContainer.classList.remove(animationClass);
             monthLabelsContainer.classList.remove(animationClass);
             isAnimating = false;
-        }, 600);
+        }, 1800);
     }
 
     // Update markers and handle
@@ -902,51 +928,62 @@ function initTimelineDragging() {
     const handle = document.getElementById('timeline-handle');
     const timeline = document.getElementById('timeline');
     const tooltip = document.getElementById('timeline-tooltip');
+    let animationFrameId = null;
 
     handle.addEventListener('mousedown', (e) => {
         isDragging = true;
-        timelineRect = timeline.getBoundingClientRect();
+        handle.classList.remove('animating');
         tooltip.classList.remove('hidden');
+        e.preventDefault();
     });
 
     document.addEventListener('mousemove', (e) => {
         if (!isDragging) return;
 
-        const x = e.clientX - timelineRect.left;
-        const percent = Math.max(0, Math.min(1, x / timelineRect.width)) * 100;
+        // Use requestAnimationFrame for smooth updates
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
 
-        const currentTime = getDateFromTimelinePosition(percent);
+        animationFrameId = requestAnimationFrame(() => {
+            // Recalculate timeline rect on each move for accuracy
+            const timelineRect = timeline.getBoundingClientRect();
+            const x = e.clientX - timelineRect.left;
+            const percent = Math.max(0, Math.min(1, x / timelineRect.width)) * 100;
 
-        // Only consider events from current year
-        let nearestIndex = 0;
-        let nearestDiff = Infinity;
-        let markerIndex = 0;
-        events.forEach((event, index) => {
-            if (event.parsedDate.getFullYear() === currentYear) {
-                const diff = Math.abs(event.parsedDate.getTime() - currentTime.getTime());
-                if (diff < nearestDiff) {
-                    nearestDiff = diff;
-                    nearestIndex = index;
+            const currentTime = getDateFromTimelinePosition(percent);
+
+            // Only consider events from current year
+            let nearestIndex = 0;
+            let nearestDiff = Infinity;
+            let markerIndex = 0;
+            events.forEach((event, index) => {
+                if (event.parsedDate.getFullYear() === currentYear) {
+                    const diff = Math.abs(event.parsedDate.getTime() - currentTime.getTime());
+                    if (diff < nearestDiff) {
+                        nearestDiff = diff;
+                        nearestIndex = index;
+                    }
                 }
-            }
-        });
+            });
 
-        handle.style.left = percent + '%';
+            handle.style.left = percent + '%';
 
-        const event = events[nearestIndex];
-        document.getElementById('tooltip-date').textContent = formatEventDate(event.date);
-        document.getElementById('tooltip-title').textContent = currentLanguage === 'sv' ? event.title_sv : event.title_en;
+            const event = events[nearestIndex];
+            document.getElementById('tooltip-date').textContent = formatEventDate(event.date);
+            document.getElementById('tooltip-title').textContent = currentLanguage === 'sv' ? event.title_sv : event.title_en;
 
-        // Update marker active states
-        const markers = document.querySelectorAll('.timeline-marker');
-        let currentYearMarkerIndex = 0;
-        events.forEach((evt, idx) => {
-            if (evt.parsedDate.getFullYear() === currentYear) {
-                if (markers[currentYearMarkerIndex]) {
-                    markers[currentYearMarkerIndex].classList.toggle('active', idx === nearestIndex);
+            // Update marker active states
+            const markers = document.querySelectorAll('.timeline-marker');
+            let currentYearMarkerIndex = 0;
+            events.forEach((evt, idx) => {
+                if (evt.parsedDate.getFullYear() === currentYear) {
+                    if (markers[currentYearMarkerIndex]) {
+                        markers[currentYearMarkerIndex].classList.toggle('active', idx === nearestIndex);
+                    }
+                    currentYearMarkerIndex++;
                 }
-                currentYearMarkerIndex++;
-            }
+            });
         });
     });
 
@@ -954,6 +991,10 @@ function initTimelineDragging() {
         if (!isDragging) return;
         isDragging = false;
         tooltip.classList.add('hidden');
+
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
 
         const handleLeft = parseFloat(handle.style.left);
         const currentTime = getDateFromTimelinePosition(handleLeft);
@@ -1383,26 +1424,6 @@ document.getElementById('back-to-info-btn').addEventListener('click', () => {
 // Explore timeline button handler
 document.getElementById('explore-timeline-btn').addEventListener('click', () => {
     document.getElementById('info-overlay').classList.add('hidden');
-});
-
-// Audio toggle handler
-const audioToggle = document.getElementById('audio-toggle');
-
-audioToggle.addEventListener('change', (e) => {
-    const isAudioOn = e.target.checked;
-    console.log('Audio toggle:', isAudioOn ? 'ON' : 'OFF');
-    // TODO: Implement audio functionality here
-});
-
-// Make toggle labels clickable
-document.querySelector('.toggle-label-off').addEventListener('click', () => {
-    audioToggle.checked = false;
-    audioToggle.dispatchEvent(new Event('change'));
-});
-
-document.querySelector('.toggle-label-on').addEventListener('click', () => {
-    audioToggle.checked = true;
-    audioToggle.dispatchEvent(new Event('change'));
 });
 
 // Image overlay handlers
