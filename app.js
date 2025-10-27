@@ -819,7 +819,7 @@ function switchToYear(year, skipAnimation = false) {
             markersContainer.classList.remove(animationClass);
             monthLabelsContainer.classList.remove(animationClass);
             isAnimating = false;
-        }, 400);
+        }, 600);
     }
 
     // Update markers and handle
