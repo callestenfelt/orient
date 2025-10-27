@@ -833,6 +833,9 @@ function goToEvent(index, withYearSwitch = false) {
     // Switch year if needed
     if (eventYear !== currentYear) {
         switchToYear(eventYear, !withYearSwitch);
+    } else {
+        // Update markers for current year
+        createTimelineMarkers();
     }
 
     updateEventContent(event);
