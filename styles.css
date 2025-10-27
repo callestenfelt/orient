@@ -369,6 +369,17 @@ body {
     overflow: visible;
 }
 
+/* Full-width white background for top section */
+#timeline-white-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    background: var(--color-white);
+    z-index: 0;
+}
+
 .timeline-nav-btn {
     width: 60px;
     height: 60px;
@@ -403,17 +414,6 @@ body {
     flex-direction: column;
 }
 
-/* White top section for timeline track and month labels */
-#timeline::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -20px;
-    right: -20px;
-    height: 60px;
-    background: var(--color-white);
-    z-index: 0;
-}
 
 /* Month labels below timeline */
 #timeline-month-labels {
