@@ -439,7 +439,7 @@ body {
     top: 15px;
     left: 0;
     right: 0;
-    height: 1px;
+    height: 2px;
     background: var(--color-dark-blue);
     z-index: 1;
 }
@@ -561,10 +561,10 @@ body {
     background: var(--color-dark-blue);
     border-radius: 50%;
     transform: translate(-50%, -50%);
-    top: 1.5px;
+    top: 1px;
     cursor: pointer;
     transition: all 0.2s;
-    border: 0px solid #1F2A44;
+    border: 0px solid var(--color-dark-blue);
     box-sizing: border-box;
     z-index: 1;
 }
@@ -573,7 +573,7 @@ body {
     width: 11px;
     height: 11px;
     background: var(--color-primary);
-    border: 3px solid #1F2A44;
+    border: 2px solid var(--color-dark-blue);
     z-index: 10;
 }
 
@@ -581,7 +581,7 @@ body {
     width: 11px;
     height: 11px;
     background: var(--color-primary);
-    border: 3px solid #1F2A44;
+    border: 2px solid var(--color-dark-blue);
     z-index: 10;
 }
 
