@@ -806,15 +806,18 @@ function switchToYear(year, skipAnimation = false) {
     });
 
     if (!skipAnimation && oldYear !== year) {
-        // Add slide animation
+        // Add slide animation to both markers and month labels
         isAnimating = true;
         const markersContainer = document.getElementById('timeline-markers');
+        const monthLabelsContainer = document.getElementById('timeline-month-labels');
         const animationClass = year > oldYear ? 'slide-left' : 'slide-right';
 
         markersContainer.classList.add(animationClass);
+        monthLabelsContainer.classList.add(animationClass);
 
         setTimeout(() => {
             markersContainer.classList.remove(animationClass);
+            monthLabelsContainer.classList.remove(animationClass);
             isAnimating = false;
         }, 400);
     }

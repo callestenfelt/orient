@@ -425,6 +425,15 @@ body {
     display: flex;
     justify-content: space-between;
     z-index: 2;
+    transition: transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+#timeline-month-labels.slide-left {
+    animation: slideLeft 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+#timeline-month-labels.slide-right {
+    animation: slideRight 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 .timeline-month-label {
