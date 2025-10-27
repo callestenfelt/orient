@@ -89,6 +89,8 @@
     "feature3": "Drag the handle to move through time",
     "creditsTitle": "Data Sources and Credits",
     "creditsLabel": "Historical borders:",
-    "creditsText": "European Borders 1938-1945 dataset from Stanford University. Copyright 2014 Stanford University. All rights reserved."
+    "creditsText": "European Borders 1938-1945 dataset from Stanford University. Copyright 2014 Stanford University. All rights reserved.",
+    "swedenMapLabel": "Sweden borders:",
+    "swedenMapText": "GIS data from SimpleMaps, licensed under CC BY 4.0."
   }
 }

@@ -1027,8 +1027,13 @@ function updateInfoOverlayTexts() {
     }
 
     document.querySelector('.info-credits h3').textContent = t('infoOverlay.creditsTitle');
-    const creditsP = document.querySelector('.info-credits .credits');
-    creditsP.innerHTML = `<strong>${t('infoOverlay.creditsLabel')}</strong> ${t('infoOverlay.creditsText')} <a href="http://www.stanford.edu/group/spatialhistory/" target="_blank" rel="noopener">The Spatial History Project</a>`;
+    const creditsP = document.querySelectorAll('.info-credits .credits');
+    if (creditsP[0]) {
+        creditsP[0].innerHTML = `<strong>${t('infoOverlay.creditsLabel')}</strong> ${t('infoOverlay.creditsText')} <a href="http://www.stanford.edu/group/spatialhistory/" target="_blank" rel="noopener">The Spatial History Project</a>`;
+    }
+    if (creditsP[1]) {
+        creditsP[1].innerHTML = `<strong>${t('infoOverlay.swedenMapLabel')}</strong> ${t('infoOverlay.swedenMapText')} <a href="https://simplemaps.com/gis/country/se#all" target="_blank" rel="noopener">SimpleMaps</a>. <a href="https://creativecommons.org/licenses/by/4.0/#ref-appropriate-credit" target="_blank" rel="noopener">CC BY 4.0 License</a>`;
+    }
 }
 
 // Language switching
