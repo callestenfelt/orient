@@ -11,6 +11,7 @@
     },
     "legend": {
       "title": "MAP INFORMATION",
+      "header": "Marked Areas on the Map",
       "germany": "Germany",
       "germanyOcc": "Germany - Occupied",
       "italy": "Italy",

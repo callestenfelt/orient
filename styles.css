@@ -78,7 +78,7 @@ body {
     top: 20px;
     left: 20px;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 20px;
 }
 
@@ -93,54 +93,76 @@ body {
 
 #map-legend {
     background: var(--color-white);
-    padding: 11px 20px 11px 10px;
+    padding: 16px 18px 18px 18px;
     border-radius: 6px;
     box-shadow: 0 0 40px -10px rgba(0,0,0,0.3),
                 0 0 25px -15px rgba(0,0,0,0.2);
-    display: flex;
-    gap: 15px;
 }
 
-.legend-column {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+.legend-header {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-black);
+    margin: 0 0 10px 0;
+    text-align: left;
+    letter-spacing: 0.3px;
+}
+
+.legend-grid {
+    display: grid;
+    grid-template-columns: repeat(4, auto);
+    grid-template-rows: repeat(2, auto);
+    grid-auto-flow: column;
+    gap: 8px 12px;
 }
 
 .legend-item {
     display: flex;
     align-items: center;
     gap: 8px;
+    padding: 6px 10px;
+    background: var(--color-white);
+    border: 1px solid #d0d0d0;
+    border-radius: 16px;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
+.legend-item:hover {
+    border-color: #999;
+    background: #fafafa;
+}
+
 .legend-item:hover .legend-label {
-    text-decoration: underline;
+    color: #000;
 }
 
 .legend-item[data-territory="germany"]:hover .legend-color {
-    box-shadow: inset 0 0 0 1px #D47B7B;
+    box-shadow: 0 0 0 2px rgba(212, 123, 123, 0.3);
 }
 
 .legend-item[data-territory="germany-occ"]:hover .legend-color {
-    box-shadow: inset 0 0 0 1px #DB9797;
+    box-shadow: 0 0 0 2px rgba(219, 151, 151, 0.3);
 }
 
 .legend-item[data-territory="italy"]:hover .legend-color {
-    box-shadow: inset 0 0 0 1px #55A17A;
+    box-shadow: 0 0 0 2px rgba(85, 161, 122, 0.3);
 }
 
 .legend-item[data-territory="italy-occ"]:hover .legend-color {
-    box-shadow: inset 0 0 0 1px #7BB597;
+    box-shadow: 0 0 0 2px rgba(123, 181, 151, 0.3);
 }
 
 .legend-item[data-territory="axis"]:hover .legend-color {
-    box-shadow: inset 0 0 0 1px #CFB572;
+    box-shadow: 0 0 0 2px rgba(207, 181, 114, 0.3);
 }
 
 .legend-item[data-territory="axis-occ"]:hover .legend-color {
-    box-shadow: inset 0 0 0 1px #DBCB9C;
+    box-shadow: 0 0 0 2px rgba(219, 203, 156, 0.3);
+}
+
+.legend-item[data-territory="sweden"]:hover .legend-color {
+    box-shadow: 0 0 0 2px rgba(100, 100, 100, 0.3);
 }
 
 .legend-color {
@@ -148,12 +170,43 @@ body {
     height: 14px;
     border-radius: 50%;
     flex-shrink: 0;
+    transition: box-shadow 0.2s ease;
+    border: 1px solid;
+}
+
+.legend-item[data-territory="germany"] .legend-color {
+    border-color: #D47B7B;
+}
+
+.legend-item[data-territory="germany-occ"] .legend-color {
+    border-color: #DB9797;
+}
+
+.legend-item[data-territory="italy"] .legend-color {
+    border-color: #55A17A;
+}
+
+.legend-item[data-territory="italy-occ"] .legend-color {
+    border-color: #7BB597;
+}
+
+.legend-item[data-territory="axis"] .legend-color {
+    border-color: #CFB572;
+}
+
+.legend-item[data-territory="axis-occ"] .legend-color {
+    border-color: #DBCB9C;
+}
+
+.legend-item[data-territory="sweden"] .legend-color {
+    border-color: #6BA9C4;
 }
 
 .legend-label {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--color-black);
     white-space: nowrap;
+    transition: color 0.2s ease;
 }
 
 #zoom-controls {
