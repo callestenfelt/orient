@@ -1,0 +1,23 @@
+# Claude Code local settings
+.claude/
+
+# Source data (too large for git)
+EuropeanBorders_WWII/
+
+# Backup directories and files
+geojson_backup/
+*_backup.*
+*.backup
+*.bak
+*-old.*
+*_old.*
+*_temp.*
+*-temp.*
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Utility scripts (local development)
+reproject_geojson.py
