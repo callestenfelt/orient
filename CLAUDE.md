@@ -4,9 +4,20 @@
 
 ### 🚀 ALWAYS START THE DEVELOPMENT SERVER FIRST
 **When starting work on this project:**
-- Run: `cd E:\orient && python -m http.server 8000`
-- Access at: http://localhost:8000
+- Run: `cd E:\orient && python -m http.server 8000 &`
+- Access at: **http://localhost:8000** (must include `http://` prefix!)
 - This should be done at the beginning of every work session
+
+**⚠️ IMPORTANT - Accessing the Server:**
+- **Always type the full URL including `http://`**: `http://localhost:8000`
+- If you just type `localhost:8000` without `http://`, most browsers will search for it instead of navigating to it
+- The server runs in the background (the `&` keeps it running)
+
+**Troubleshooting:**
+- Check if server is running: `netstat -an | grep 8000`
+- Should see: `TCP    0.0.0.0:8000           0.0.0.0:0              LISTENING`
+- Kill existing server if needed: `taskkill /F /FI "LOCALPORT eq 8000"`
+- Alternative ports if 8000 is busy: `python -m http.server 8080 &` (then use http://localhost:8080)
 
 ### 🌍 BILINGUAL REQUIREMENT: Always Add Both Swedish and English Text
 **When adding ANY text content to the project:**
@@ -66,7 +77,9 @@ Main files:
 - `styles.css` - Main stylesheet
 
 ## Current Branch
-`alternative-version`
+`tabs`
+
+**Published at:** https://callestenfelt.github.io/orient/tabs/
 
 ## Development Server
 Run from project root: `python -m http.server 8000`
