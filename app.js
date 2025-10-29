@@ -1765,19 +1765,46 @@ document.getElementById('explore-timeline-btn').addEventListener('click', () => 
 document.getElementById('event-image-container').addEventListener('click', () => {
     const imageSrc = document.getElementById('event-image').src;
     const imageCaption = document.getElementById('event-image-caption').textContent;
+    const imageOverlay = document.getElementById('image-overlay');
+    const imageOverlayContent = document.getElementById('image-overlay-content');
 
     document.getElementById('overlay-image').src = imageSrc;
     document.getElementById('overlay-image-caption').textContent = imageCaption;
-    document.getElementById('image-overlay').classList.remove('hidden');
+
+    // Remove hidden class and trigger reflow
+    imageOverlay.classList.remove('hidden');
+
+    // Trigger scale animation after a brief delay
+    setTimeout(() => {
+        imageOverlayContent.classList.add('scale-in');
+    }, 10);
 });
 
 document.getElementById('close-image-btn').addEventListener('click', () => {
-    document.getElementById('image-overlay').classList.add('hidden');
+    const imageOverlay = document.getElementById('image-overlay');
+    const imageOverlayContent = document.getElementById('image-overlay-content');
+
+    // Remove scale-in class to trigger reverse animation
+    imageOverlayContent.classList.remove('scale-in');
+
+    // Wait for animation to complete (400ms) before hiding
+    setTimeout(() => {
+        imageOverlay.classList.add('hidden');
+    }, 400);
 });
 
 // Close image overlay when clicking on the background
 document.getElementById('image-overlay').addEventListener('click', (e) => {
     if (e.target.id === 'image-overlay') {
-        document.getElementById('image-overlay').classList.add('hidden');
+        const imageOverlay = document.getElementById('image-overlay');
+        const imageOverlayContent = document.getElementById('image-overlay-content');
+
+        // Remove scale-in class to trigger reverse animation
+        imageOverlayContent.classList.remove('scale-in');
+
+        // Wait for animation to complete (400ms) before hiding
+        setTimeout(() => {
+            imageOverlay.classList.add('hidden');
+        }, 400);
     }
 });
