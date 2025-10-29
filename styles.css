@@ -1466,8 +1466,14 @@ body {
 
 /* Hide pulse animation when parent container is hidden */
 .hidden #explore-timeline-btn::before,
-.hidden #explore-timeline-btn::after {
+.hidden #explore-timeline-btn::after,
+#info-main-content.hidden #explore-timeline-btn::before,
+#info-main-content.hidden #explore-timeline-btn::after {
+    content: none !important;
     display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    animation: none !important;
 }
 
 @keyframes exploreButtonPulse {
