@@ -1749,10 +1749,17 @@ body {
     padding-bottom: 140px;
 }
 
+#image-overlay-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 #close-image-btn {
     position: absolute;
-    top: -40px;
-    right: -40px;
+    top: calc(10vh - 40px);
+    right: calc(10vw - 40px);
     width: 80px;
     height: 80px;
     background: var(--color-primary);
@@ -1792,7 +1799,6 @@ body {
     padding: 10px;
     padding-bottom: 35px;
     position: relative;
-    overflow: visible;
     box-shadow: 0 0 40px -10px rgba(0,0,0,0.3),
                 0 0 25px -15px rgba(0,0,0,0.2);
     /* Initial state: positioned at source image with small scale */
