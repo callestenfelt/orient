@@ -1194,14 +1194,22 @@ function initIdleDetection() {
 
         // Set new timer to add idle class after delay
         idleTimer = setTimeout(() => {
+            // Check if any overlay is open - if so, don't add idle animations
+            const infoOverlay = document.getElementById('info-overlay');
+            const imageOverlay = document.getElementById('image-overlay');
+            const isAnyOverlayOpen = (infoOverlay && !infoOverlay.classList.contains('hidden')) ||
+                                     (imageOverlay && !imageOverlay.classList.contains('hidden'));
+
+            if (isAnyOverlayOpen) {
+                // Don't add idle animations when overlays are open
+                return;
+            }
+
+            // Only add idle animations when no overlay is open
             prevBtn.classList.add('idle');
             nextBtn.classList.add('idle');
-            // Only add idle to explore button if info-main-content is visible
             if (exploreBtn) {
-                const infoMainContent = document.getElementById('info-main-content');
-                if (infoMainContent && !infoMainContent.classList.contains('hidden')) {
-                    exploreBtn.classList.add('idle');
-                }
+                exploreBtn.classList.add('idle');
             }
             scrollUpBtn.classList.add('idle');
             scrollDownBtn.classList.add('idle');
@@ -1640,10 +1648,26 @@ function populateImageSources() {
     });
 }
 
+// Helper function to remove all idle classes
+function removeAllIdleClasses() {
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const exploreBtn = document.getElementById('explore-timeline-btn');
+    const scrollUpBtn = document.getElementById('scroll-up-btn');
+    const scrollDownBtn = document.getElementById('scroll-down-btn');
+
+    if (prevBtn) prevBtn.classList.remove('idle');
+    if (nextBtn) nextBtn.classList.remove('idle');
+    if (exploreBtn) exploreBtn.classList.remove('idle');
+    if (scrollUpBtn) scrollUpBtn.classList.remove('idle');
+    if (scrollDownBtn) scrollDownBtn.classList.remove('idle');
+}
+
 // Information overlay handlers
 document.getElementById('help-btn').addEventListener('click', () => {
     document.getElementById('info-overlay').classList.remove('hidden');
     showMainInfo();
+    removeAllIdleClasses(); // Remove idle animations when overlay opens
 });
 
 document.getElementById('close-info-btn').addEventListener('click', () => {
@@ -1673,11 +1697,8 @@ function showImageSources() {
     document.getElementById('info-image-sources').classList.remove('hidden');
     document.getElementById('back-to-info-btn').classList.remove('hidden');
 
-    // Remove idle class from explore button when on Bildkällor page
-    const exploreBtn = document.getElementById('explore-timeline-btn');
-    if (exploreBtn) {
-        exploreBtn.classList.remove('idle');
-    }
+    // Remove all idle animations when switching to Bildkällor
+    removeAllIdleClasses();
 
     populateImageSources();
     // Update scroll buttons after a short delay to ensure content is rendered
