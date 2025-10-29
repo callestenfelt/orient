@@ -1303,9 +1303,9 @@ body {
 
 #info-image-sources-header {
     position: sticky;
-    top: 0;
+    top: -20px;
     background: var(--color-white);
-    z-index: 10;
+    z-index: 100;
     padding-top: 20px;
     padding-bottom: 20px;
     margin-bottom: 20px;
@@ -1316,6 +1316,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .info-header-left {
