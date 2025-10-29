@@ -1012,7 +1012,7 @@ body {
     align-items: center;
     gap: 8px;
     text-transform: uppercase;
-    position: static;
+    position: relative;
     margin-right: 30px;
     flex-shrink: 0;
 }
