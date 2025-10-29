@@ -1788,9 +1788,13 @@ document.getElementById('event-image-container').addEventListener('click', (e) =
     document.getElementById('overlay-image').src = imageSrc;
     document.getElementById('overlay-image-caption').textContent = imageCaption;
 
-    // Set initial position and scale
-    imageOverlayContent.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${initialScale})`;
-    imageOverlayContent.style.opacity = '0';
+    // Set initial position and scale using CSS custom properties
+    imageOverlayContent.style.setProperty('--start-x', `${offsetX}px`);
+    imageOverlayContent.style.setProperty('--start-y', `${offsetY}px`);
+    imageOverlayContent.style.setProperty('--start-scale', initialScale);
+
+    // Remove scale-in class first (in case it's still there from previous)
+    imageOverlayContent.classList.remove('scale-in');
 
     // Remove hidden class and trigger reflow
     imageOverlay.classList.remove('hidden');
