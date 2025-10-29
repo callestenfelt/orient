@@ -1796,6 +1796,10 @@ document.getElementById('event-image-container').addEventListener('click', (e) =
     // Remove scale-in class first (in case it's still there from previous)
     imageOverlayContent.classList.remove('scale-in');
 
+    // Hide close button initially
+    const closeBtn = document.getElementById('close-image-btn');
+    closeBtn.classList.remove('visible');
+
     // Remove hidden class and trigger reflow
     imageOverlay.classList.remove('hidden');
     void imageOverlayContent.offsetWidth; // Force reflow
@@ -1803,12 +1807,21 @@ document.getElementById('event-image-container').addEventListener('click', (e) =
     // Trigger scale animation after a brief delay
     setTimeout(() => {
         imageOverlayContent.classList.add('scale-in');
+
+        // Fade in close button after scale animation completes (400ms)
+        setTimeout(() => {
+            closeBtn.classList.add('visible');
+        }, 400);
     }, 10);
 });
 
 document.getElementById('close-image-btn').addEventListener('click', () => {
     const imageOverlay = document.getElementById('image-overlay');
     const imageOverlayContent = document.getElementById('image-overlay-content');
+    const closeBtn = document.getElementById('close-image-btn');
+
+    // Hide close button immediately
+    closeBtn.classList.remove('visible');
 
     // Remove scale-in class to trigger reverse animation
     imageOverlayContent.classList.remove('scale-in');
@@ -1828,6 +1841,10 @@ document.getElementById('image-overlay').addEventListener('click', (e) => {
     if (e.target.id === 'image-overlay') {
         const imageOverlay = document.getElementById('image-overlay');
         const imageOverlayContent = document.getElementById('image-overlay-content');
+        const closeBtn = document.getElementById('close-image-btn');
+
+        // Hide close button immediately
+        closeBtn.classList.remove('visible');
 
         // Remove scale-in class to trigger reverse animation
         imageOverlayContent.classList.remove('scale-in');
