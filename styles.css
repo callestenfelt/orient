@@ -492,13 +492,14 @@ body {
     animation-play-state: paused;
 }
 
-.timeline-nav-btn.idle::before {
+/* TEMPORARILY DISABLED - for debugging only */
+/* .timeline-nav-btn.idle::before {
     animation: heartbeatPulse 2.4s ease-out infinite;
 }
 
 .timeline-nav-btn.idle::after {
     animation: heartbeatPulse 2.4s ease-out 0.3s infinite;
-}
+} */
 
 @keyframes heartbeatPulse {
     0% {
@@ -1424,13 +1425,14 @@ body {
     animation-play-state: paused;
 }
 
-.scroll-step-btn.idle::before {
+/* TEMPORARILY DISABLED - for debugging only */
+/* .scroll-step-btn.idle::before {
     animation: heartbeatPulse 2.4s ease-out infinite;
 }
 
 .scroll-step-btn.idle::after {
     animation: heartbeatPulse 2.4s ease-out 0.3s infinite;
-}
+} */
 
 /* Big Yellow Button */
 #explore-timeline-btn {
@@ -1456,13 +1458,14 @@ body {
     animation-play-state: paused;
 }
 
-#explore-timeline-btn.idle::before {
+/* TEMPORARILY DISABLED - for debugging only */
+/* #explore-timeline-btn.idle::before {
     animation: exploreButtonPulse 2.4s ease-out infinite;
 }
 
 #explore-timeline-btn.idle::after {
     animation: exploreButtonPulse 2.4s ease-out 0.4s infinite;
-}
+} */
 
 /* Hide pulse animation when parent container is hidden */
 .hidden #explore-timeline-btn::before,
