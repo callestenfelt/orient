@@ -1608,25 +1608,33 @@ function populateImageSources() {
     let itemCount = 0;
 
     years.forEach(year => {
+        // Create a wrapper for year and its sources to keep them together
+        const yearSection = document.createElement('div');
+        yearSection.className = 'image-source-year-section';
+
         const yearDiv = document.createElement('div');
         yearDiv.className = 'image-source-year';
         yearDiv.textContent = year;
-
-        currentColumn.appendChild(yearDiv);
-        itemCount++;
+        yearSection.appendChild(yearDiv);
 
         imageSources[year].forEach(source => {
             const sourceDiv = document.createElement('div');
             sourceDiv.textContent = source;
-            currentColumn.appendChild(sourceDiv);
-            itemCount++;
-
-            if (itemCount >= itemsPerColumn && currentColumn.children.length > 0) {
-                container.appendChild(currentColumn);
-                currentColumn = document.createElement('div');
-                itemCount = 0;
-            }
+            yearSection.appendChild(sourceDiv);
         });
+
+        // Check if adding this section would exceed column capacity
+        const sectionItemCount = imageSources[year].length + 1;
+
+        // If current column has items and adding this section would be too much, start new column
+        if (itemCount > 0 && itemCount + sectionItemCount > itemsPerColumn) {
+            container.appendChild(currentColumn);
+            currentColumn = document.createElement('div');
+            itemCount = 0;
+        }
+
+        currentColumn.appendChild(yearSection);
+        itemCount += sectionItemCount;
     });
 
     if (currentColumn.children.length > 0) {
