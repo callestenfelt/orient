@@ -1196,8 +1196,12 @@ function initIdleDetection() {
         idleTimer = setTimeout(() => {
             prevBtn.classList.add('idle');
             nextBtn.classList.add('idle');
+            // Only add idle to explore button if info-main-content is visible
             if (exploreBtn) {
-                exploreBtn.classList.add('idle');
+                const infoMainContent = document.getElementById('info-main-content');
+                if (infoMainContent && !infoMainContent.classList.contains('hidden')) {
+                    exploreBtn.classList.add('idle');
+                }
             }
             scrollUpBtn.classList.add('idle');
             scrollDownBtn.classList.add('idle');
@@ -1668,6 +1672,13 @@ function showImageSources() {
     document.getElementById('info-main-content').classList.add('hidden');
     document.getElementById('info-image-sources').classList.remove('hidden');
     document.getElementById('back-to-info-btn').classList.remove('hidden');
+
+    // Remove idle class from explore button when on Bildkällor page
+    const exploreBtn = document.getElementById('explore-timeline-btn');
+    if (exploreBtn) {
+        exploreBtn.classList.remove('idle');
+    }
+
     populateImageSources();
     // Update scroll buttons after a short delay to ensure content is rendered
     setTimeout(updateScrollButtons, 100);
