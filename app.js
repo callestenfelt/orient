@@ -927,6 +927,7 @@ function switchToYear(year, skipAnimation = false, hideHandle = false, targetEve
                 createTimelineYearLabels();
 
                 // Position handle
+                handle.classList.remove('animating'); // Remove transition to prevent horizontal animation
                 const position = getTimelinePosition(event.parsedDate);
                 handle.style.left = position + '%';
 
@@ -955,6 +956,7 @@ function switchToYear(year, skipAnimation = false, hideHandle = false, targetEve
                 updateNavigationButtons();
             } else if (!hideHandle && events[currentEventIndex]) {
                 // Position and show handle if not hiding it
+                handle.classList.remove('animating'); // Remove transition to prevent horizontal animation
                 const position = getTimelinePosition(events[currentEventIndex].parsedDate);
                 handle.style.left = position + '%';
 

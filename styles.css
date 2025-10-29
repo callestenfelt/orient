@@ -474,6 +474,42 @@ body {
     box-sizing: border-box;
 }
 
+/* Pulse animations for navigation buttons */
+.timeline-nav-btn::before,
+.timeline-nav-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.timeline-nav-btn::before {
+    animation: heartbeatPulse 2.4s ease-out infinite;
+}
+
+.timeline-nav-btn::after {
+    animation: heartbeatPulse 2.4s ease-out 0.3s infinite;
+}
+
+@keyframes heartbeatPulse {
+    0% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0.7;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(2.2);
+        opacity: 0;
+    }
+}
+
 #prev-btn {
     left: 20px;
 }
