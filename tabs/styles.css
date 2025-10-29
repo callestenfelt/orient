@@ -1464,6 +1464,12 @@ body {
     animation: exploreButtonPulse 2.4s ease-out 0.4s infinite;
 }
 
+/* Hide pulse animation when parent container is hidden */
+.hidden #explore-timeline-btn::before,
+.hidden #explore-timeline-btn::after {
+    display: none !important;
+}
+
 @keyframes exploreButtonPulse {
     0% {
         transform: translate(-50%, -50%);
