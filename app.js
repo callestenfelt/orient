@@ -1172,6 +1172,8 @@ function initIdleDetection() {
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
     const exploreBtn = document.getElementById('explore-timeline-btn');
+    const scrollUpBtn = document.getElementById('scroll-up-btn');
+    const scrollDownBtn = document.getElementById('scroll-down-btn');
     let idleTimer = null;
     const IDLE_DELAY = 3000; // 3 seconds
 
@@ -1182,6 +1184,8 @@ function initIdleDetection() {
         if (exploreBtn) {
             exploreBtn.classList.remove('idle');
         }
+        scrollUpBtn.classList.remove('idle');
+        scrollDownBtn.classList.remove('idle');
 
         // Clear existing timer
         if (idleTimer) {
@@ -1195,6 +1199,8 @@ function initIdleDetection() {
             if (exploreBtn) {
                 exploreBtn.classList.add('idle');
             }
+            scrollUpBtn.classList.add('idle');
+            scrollDownBtn.classList.add('idle');
         }, IDLE_DELAY);
     }
 
@@ -1661,6 +1667,8 @@ function showImageSources() {
     document.getElementById('info-image-sources').classList.remove('hidden');
     document.getElementById('back-to-info-btn').classList.remove('hidden');
     populateImageSources();
+    // Update scroll buttons after a short delay to ensure content is rendered
+    setTimeout(updateScrollButtons, 100);
 }
 
 // Image sources link handler
@@ -1673,6 +1681,46 @@ document.getElementById('show-image-sources-link').addEventListener('click', (e)
 document.getElementById('back-to-info-btn').addEventListener('click', () => {
     showMainInfo();
 });
+
+// Scroll step buttons for image sources
+const infoContent = document.getElementById('info-content');
+const scrollUpBtn = document.getElementById('scroll-up-btn');
+const scrollDownBtn = document.getElementById('scroll-down-btn');
+const SCROLL_STEP = 300; // pixels to scroll
+
+scrollUpBtn.addEventListener('click', () => {
+    infoContent.scrollBy({
+        top: -SCROLL_STEP,
+        behavior: 'smooth'
+    });
+});
+
+scrollDownBtn.addEventListener('click', () => {
+    infoContent.scrollBy({
+        top: SCROLL_STEP,
+        behavior: 'smooth'
+    });
+});
+
+// Update scroll button states based on scroll position
+function updateScrollButtons() {
+    const atTop = infoContent.scrollTop === 0;
+    const atBottom = infoContent.scrollTop + infoContent.clientHeight >= infoContent.scrollHeight - 1;
+
+    if (atTop) {
+        scrollUpBtn.classList.add('disabled');
+    } else {
+        scrollUpBtn.classList.remove('disabled');
+    }
+
+    if (atBottom) {
+        scrollDownBtn.classList.add('disabled');
+    } else {
+        scrollDownBtn.classList.remove('disabled');
+    }
+}
+
+infoContent.addEventListener('scroll', updateScrollButtons);
 
 // Explore timeline button handler
 document.getElementById('explore-timeline-btn').addEventListener('click', () => {
