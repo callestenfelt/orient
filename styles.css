@@ -1757,9 +1757,9 @@ body {
 }
 
 #close-image-btn {
-    position: absolute;
-    top: -40px;
-    left: -40px;
+    position: fixed;
+    top: calc(10vh - 30px);
+    right: calc(10vw - 30px);
     width: 80px;
     height: 80px;
     background: var(--color-primary);
@@ -1775,7 +1775,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10;
+    z-index: 3002;
     box-sizing: border-box;
     opacity: 0;
     pointer-events: none;
@@ -1798,6 +1798,7 @@ body {
     padding: 10px;
     padding-bottom: 35px;
     position: relative;
+    overflow: visible;
     box-shadow: 0 0 40px -10px rgba(0,0,0,0.3),
                 0 0 25px -15px rgba(0,0,0,0.2);
     /* Initial state: positioned at source image with small scale */
