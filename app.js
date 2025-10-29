@@ -11,6 +11,8 @@ let timelineRect = null;
 let currentLanguage = 'sv';
 let isShowingTerritoryInfo = false;
 let translations = null;
+let currentYear = 1938;
+let isAnimating = false;
 
 // Load translations
 async function loadTranslations(lang) {
@@ -434,6 +436,66 @@ async function updateBorders(date) {
     }
 }
 
+// Load and display Sweden overlay
+async function loadSwedenOverlay() {
+    try {
+        const response = await fetch('geojson/se.json');
+        const data = await response.json();
+
+        // Remove CRS property if it exists
+        delete data.crs;
+
+        if (map.getSource('sweden')) {
+            map.getSource('sweden').setData(data);
+        } else {
+            map.addSource('sweden', {
+                type: 'geojson',
+                data: data
+            });
+
+            map.addLayer({
+                id: 'sweden-fill',
+                type: 'fill',
+                source: 'sweden',
+                paint: {
+                    'fill-color': getCSSVariable('--map-sweden'),
+                    'fill-opacity': 0.4
+                }
+            }, 'waterway-label');
+
+            map.addLayer({
+                id: 'sweden-outline',
+                type: 'line',
+                source: 'sweden',
+                paint: {
+                    'line-color': '#6BA9C4',
+                    'line-width': 1,
+                    'line-opacity': 0
+                }
+            }, 'waterway-label');
+
+            // Add hover and click interactivity for Sweden
+            map.on('mouseenter', 'sweden-fill', () => {
+                map.getCanvas().style.cursor = 'pointer';
+                map.setPaintProperty('sweden-fill', 'fill-opacity', 0.6);
+                map.setPaintProperty('sweden-outline', 'line-opacity', 0.8);
+            });
+
+            map.on('mouseleave', 'sweden-fill', () => {
+                map.getCanvas().style.cursor = '';
+                map.setPaintProperty('sweden-fill', 'fill-opacity', 0.4);
+                map.setPaintProperty('sweden-outline', 'line-opacity', 0);
+            });
+
+            map.on('click', 'sweden-fill', () => {
+                showTerritoryInfo('sweden');
+            });
+        }
+    } catch (error) {
+        console.log('Sweden GeoJSON file not found:', error);
+    }
+}
+
 // Determine territory type from feature properties
 function getTerritoryType(feature) {
     const name = feature.properties.Name;
@@ -465,16 +527,54 @@ function getTerritoryType(feature) {
 
 // Setup territory click and hover interactions
 function setupTerritoryInteractivity() {
-    // Change cursor on hover
-    map.on('mouseenter', 'borders-fill', () => {
-        map.getCanvas().style.cursor = 'pointer';
+    // Add hover effect - only for territories in the legend
+    let hoveredStateId = null;
+
+    map.on('mousemove', 'borders-fill', (e) => {
+        if (e.features.length > 0) {
+            const feature = e.features[0];
+            const territoryType = getTerritoryType(feature);
+
+            // Only apply hover if this is a legend territory
+            if (territoryType) {
+                map.getCanvas().style.cursor = 'pointer';
+
+                if (hoveredStateId !== null) {
+                    map.setFeatureState(
+                        { source: 'borders', id: hoveredStateId },
+                        { hover: false }
+                    );
+                }
+                hoveredStateId = feature.id;
+                map.setFeatureState(
+                    { source: 'borders', id: hoveredStateId },
+                    { hover: true }
+                );
+            } else {
+                map.getCanvas().style.cursor = '';
+                if (hoveredStateId !== null) {
+                    map.setFeatureState(
+                        { source: 'borders', id: hoveredStateId },
+                        { hover: false }
+                    );
+                    hoveredStateId = null;
+                }
+            }
+        }
     });
 
     map.on('mouseleave', 'borders-fill', () => {
         map.getCanvas().style.cursor = '';
+        if (hoveredStateId !== null) {
+            map.setFeatureState(
+                { source: 'borders', id: hoveredStateId },
+                { hover: false }
+            );
+        }
+        hoveredStateId = null;
     });
 
-    // Handle territory clicks
+    // Handle territory clicks - only for legend territories
     map.on('click', 'borders-fill', (e) => {
         if (e.features.length > 0) {
             const feature = e.features[0];
@@ -484,35 +584,6 @@ function setupTerritoryInteractivity() {
                 showTerritoryInfo(territoryType);
             }
         }
-    });
-
-    // Add hover effect - brighten the territory
-    let hoveredStateId = null;
-
-    map.on('mousemove', 'borders-fill', (e) => {
-        if (e.features.length > 0) {
-            if (hoveredStateId !== null) {
-                map.setFeatureState(
-                    { source: 'borders', id: hoveredStateId },
-                    { hover: false }
-                );
-            }
-            hoveredStateId = e.features[0].id;
-            map.setFeatureState(
-                { source: 'borders', id: hoveredStateId },
-                { hover: true }
-            );
-        }
-    });
-
-    map.on('mouseleave', 'borders-fill', () => {
-        if (hoveredStateId !== null) {
-            map.setFeatureState(
-                { source: 'borders', id: hoveredStateId },
-                { hover: false }
-            );
-        }
-        hoveredStateId = null;
     });
 }
 
@@ -547,7 +618,8 @@ function showTerritoryInfo(territoryType) {
             'italy': 'gfx/images/italy.webp',
             'italy-occ': 'gfx/images/italy_occ.webp',
             'axis': 'gfx/images/axis.webp',
-            'axis-occ': 'gfx/images/axis_occ.webp'
+            'axis-occ': 'gfx/images/axis_occ.webp',
+            'sweden': 'gfx/images/27.-Roda-korset_tidslinje_evakuera-alla.webp'
         };
         const imagePath = imageMap[territoryType];
 
@@ -566,29 +638,7 @@ function createEventMarkers() {
     eventMarkers.forEach(marker => marker.remove());
     eventMarkers = [];
 
-    // Add inactive markers first
-    events.forEach((event, index) => {
-        if (index === currentEventIndex) return; // Skip active marker for now
-
-        const el = document.createElement('div');
-        el.className = 'event-marker';
-
-        el.addEventListener('click', (e) => {
-            e.stopPropagation();
-            goToEvent(index);
-        });
-
-        const marker = new mapboxgl.Marker({
-            element: el,
-            anchor: 'center'
-        })
-            .setLngLat(event.coordinates)
-            .addTo(map);
-
-        eventMarkers.push(marker);
-    });
-
-    // Add active marker last so it appears on top
+    // Only add active marker (remove inactive markers)
     if (currentEventIndex >= 0 && currentEventIndex < events.length) {
         const event = events[currentEventIndex];
         const el = document.createElement('div');
@@ -645,141 +695,378 @@ function updateEventContent(event) {
     }, 300);
 }
 
-// Create timeline year labels and ticks
-function createTimelineYearLabels() {
-    const container = document.getElementById('timeline-year-labels');
+// Create year pill buttons (1933-1948)
+function createYearPills() {
+    const container = document.getElementById('timeline-year-pills');
     container.innerHTML = '';
 
-    if (events.length === 0) return;
+    for (let year = 1933; year <= 1948; year++) {
+        const pill = document.createElement('button');
+        pill.className = 'timeline-year-pill';
+        pill.textContent = year;
+        pill.setAttribute('data-year', year);
 
-    const minDate = events[0].parsedDate;
-    const maxDate = events[events.length - 1].parsedDate;
-    const startYear = minDate.getFullYear();
-    const endYear = maxDate.getFullYear();
+        if (year === currentYear) {
+            pill.classList.add('active');
+        }
 
-    // Calculate all years to display (inclusive)
-    const years = [];
-    for (let year = startYear; year <= endYear; year++) {
-        years.push(year);
+        pill.addEventListener('click', () => {
+            if (year !== currentYear && !isAnimating) {
+                // Find first event for this year
+                const firstEventIndex = events.findIndex(event =>
+                    event.parsedDate.getFullYear() === year
+                );
+
+                if (firstEventIndex !== -1) {
+                    // If events exist for this year, switch year and then go to first event
+                    switchToYear(year, false, false, firstEventIndex);
+                } else {
+                    // If no events, just switch year without showing handle
+                    switchToYear(year, false, true);
+                }
+            }
+        });
+
+        container.appendChild(pill);
     }
-    const totalYears = years.length;
-
-    // Create year labels and ticks evenly distributed
-    for (let i = 0; i < totalYears; i++) {
-        const year = years[i];
-        const positionStart = (i / totalYears) * 100;
-        const positionEnd = ((i + 1) / totalYears) * 100;
-        const positionCenter = (positionStart + positionEnd) / 2;
-
-        // Create tick mark at year boundary
-        const tick = document.createElement('div');
-        tick.className = 'timeline-year-tick';
-        tick.style.left = positionStart + '%';
-        container.appendChild(tick);
-
-        // Create year label centered in the year section
-        const label = document.createElement('div');
-        label.className = 'timeline-year-label';
-        label.textContent = year;
-        label.style.left = positionCenter + '%';
-        label.style.transform = 'translateX(-50%)';
-        container.appendChild(label);
-    }
-
-    // Add final tick at the end
-    const finalTick = document.createElement('div');
-    finalTick.className = 'timeline-year-tick';
-    finalTick.style.left = '100%';
-    container.appendChild(finalTick);
 }
 
-// Calculate timeline position for a date (respects year boundaries)
-function getTimelinePosition(date) {
-    const minDate = events[0].parsedDate;
-    const maxDate = events[events.length - 1].parsedDate;
-    const startYear = minDate.getFullYear();
-    const endYear = maxDate.getFullYear();
-    const totalYears = endYear - startYear + 1;
+// Create month labels for a specific year at a specific offset position
+function createMonthLabelsForYear(container, year, offsetPercent) {
+    const monthKeys = ['januari', 'februari', 'mars', 'april', 'maj', 'juni',
+                       'juli', 'augusti', 'september', 'oktober', 'november', 'december'];
 
+    monthKeys.forEach((monthKey, index) => {
+        const label = document.createElement('div');
+        label.className = 'timeline-month-label';
+        label.textContent = translations ? t('ui.months.' + monthKey).toLowerCase() : monthKey;
+        // Position with consistent spacing: 0%, 8.33%, 16.67%, ... 91.67%
+        // This leaves 8.33% gap before next year, matching inter-month spacing
+        const monthPosition = (index * (100 / 12));
+        label.style.left = (offsetPercent + monthPosition) + '%';
+        label.setAttribute('data-year', year);
+        container.appendChild(label);
+    });
+}
+
+// Create month labels for previous, current, and next years
+function createMonthLabels() {
+    const container = document.getElementById('timeline-month-labels');
+    container.innerHTML = '';
+
+    // Render previous year (at -100%)
+    if (currentYear > 1933) {
+        createMonthLabelsForYear(container, currentYear - 1, -100);
+    }
+
+    // Render current year (at 0%)
+    createMonthLabelsForYear(container, currentYear, 0);
+
+    // Render next year (at +100%)
+    if (currentYear < 1948) {
+        createMonthLabelsForYear(container, currentYear + 1, 100);
+    }
+}
+
+// Create timeline year labels and ticks (deprecated - kept for compatibility)
+function createTimelineYearLabels() {
+    // This function is now replaced by createYearPills and createMonthLabels
+    createYearPills();
+    createMonthLabels();
+}
+
+// Calculate timeline position for a date within current year (0-100%)
+function getTimelinePosition(date) {
     const eventYear = date.getFullYear();
-    const yearIndex = eventYear - startYear;
 
     // Calculate position within the year (0 to 1)
     const yearStart = new Date(eventYear, 0, 1);
     const yearEnd = new Date(eventYear, 11, 31, 23, 59, 59);
     const yearProgress = (date - yearStart) / (yearEnd - yearStart);
 
-    // Calculate overall position
-    const yearSectionWidth = 100 / totalYears;
-    const position = (yearIndex * yearSectionWidth) + (yearProgress * yearSectionWidth);
-
-    return position;
+    // Return position as percentage (0-100)
+    return yearProgress * 100;
 }
 
-// Create timeline markers
-function createTimelineMarkers() {
-    const container = document.getElementById('timeline-markers');
-    container.innerHTML = '';
+// Create timeline markers for a specific year at a specific offset position
+function createTimelineMarkersForYear(container, year, offsetPercent, containerWidth) {
+    const minDistance = 8; // Minimum distance in pixels
+    const markerPositions = []; // Track adjusted positions
 
+    // Filter events for this year and calculate positions
+    const yearEvents = [];
     events.forEach((event, index) => {
+        const eventYear = event.parsedDate.getFullYear();
+        if (eventYear === year) {
+            const position = getTimelinePosition(event.parsedDate);
+            yearEvents.push({ event, index, position });
+        }
+    });
+
+    // Adjust positions to maintain minimum distance
+    yearEvents.forEach((item, i) => {
+        let adjustedPosition = item.position;
+        const pixelPosition = (adjustedPosition / 100) * containerWidth;
+
+        // Check against previous markers
+        for (let j = 0; j < markerPositions.length; j++) {
+            const prevPixelPos = (markerPositions[j] / 100) * containerWidth;
+            if (Math.abs(pixelPosition - prevPixelPos) < minDistance) {
+                // Adjust position to maintain minimum distance
+                const newPixelPos = prevPixelPos + minDistance;
+                adjustedPosition = (newPixelPos / containerWidth) * 100;
+            }
+        }
+
+        markerPositions.push(adjustedPosition);
+
+        // Create marker
         const marker = document.createElement('div');
         marker.className = 'timeline-marker';
+        marker.style.left = (offsetPercent + adjustedPosition) + '%';
+        marker.setAttribute('data-year', year);
 
-        const position = getTimelinePosition(event.parsedDate);
-        marker.style.left = position + '%';
-
-        if (index === currentEventIndex) {
+        if (item.index === currentEventIndex) {
             marker.classList.add('active');
         }
 
         marker.addEventListener('click', () => {
-            goToEvent(index);
+            goToEvent(item.index);
         });
 
         container.appendChild(marker);
     });
 }
 
+// Create timeline markers for previous, current, and next years
+function createTimelineMarkers() {
+    const container = document.getElementById('timeline-markers');
+    container.innerHTML = '';
+
+    const containerWidth = container.offsetWidth || 1000; // Fallback width
+    const allYears = Array.from(new Set(events.map(e => e.parsedDate.getFullYear()))).sort((a, b) => a - b);
+    const currentYearIndex = allYears.indexOf(currentYear);
+
+    // Only render adjacent years if current year has events
+    if (currentYearIndex !== -1) {
+        // Render previous year (at -100%)
+        if (currentYearIndex > 0) {
+            createTimelineMarkersForYear(container, allYears[currentYearIndex - 1], -100, containerWidth);
+        }
+
+        // Render current year (at 0%)
+        createTimelineMarkersForYear(container, currentYear, 0, containerWidth);
+
+        // Render next year (at +100%)
+        if (currentYearIndex < allYears.length - 1) {
+            createTimelineMarkersForYear(container, allYears[currentYearIndex + 1], 100, containerWidth);
+        }
+    }
+    // If current year has no events, don't render any markers
+}
+
 // Update timeline handle position
 function updateTimelineHandle() {
     const handle = document.getElementById('timeline-handle');
+    handle.classList.add('animating');
     const position = getTimelinePosition(events[currentEventIndex].parsedDate);
     handle.style.left = position + '%';
 }
 
+// Switch to a different year with animation
+function switchToYear(year, skipAnimation = false, hideHandle = false, targetEventIndex = null) {
+    const oldYear = currentYear;
+    currentYear = year;
+    const handle = document.getElementById('timeline-handle');
+
+    // Update pill active states
+    document.querySelectorAll('.timeline-year-pill').forEach(pill => {
+        if (parseInt(pill.getAttribute('data-year')) === year) {
+            pill.classList.add('active');
+        } else {
+            pill.classList.remove('active');
+        }
+    });
+
+    if (!skipAnimation && oldYear !== year) {
+        // Simple approach: just hide handle during entire year switch
+        isAnimating = true;
+        const markersContainer = document.getElementById('timeline-markers');
+        const monthLabelsContainer = document.getElementById('timeline-month-labels');
+        const direction = year > oldYear ? -100 : 100;
+
+        // Immediately hide handle
+        handle.style.visibility = 'hidden';
+
+        // Animate timeline
+        markersContainer.style.transition = 'transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        monthLabelsContainer.style.transition = 'transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        markersContainer.style.transform = `translateX(${direction}%)`;
+        monthLabelsContainer.style.transform = `translateX(${direction}%)`;
+
+        setTimeout(() => {
+            // Reset timeline
+            markersContainer.style.transition = 'none';
+            monthLabelsContainer.style.transition = 'none';
+            markersContainer.style.transform = 'translateX(0)';
+            monthLabelsContainer.style.transform = 'translateX(0)';
+
+            // Re-render
+            createTimelineMarkers();
+            createMonthLabels();
+
+            // If target event specified, go to that event with drop animation
+            if (targetEventIndex !== null) {
+                currentEventIndex = targetEventIndex;
+                const event = events[targetEventIndex];
+
+                // Update event content and map
+                updateEventContent(event);
+                updateBorders(event.parsedDate);
+                createEventMarkers();
+                createTimelineYearLabels();
+
+                // Position handle
+                const position = getTimelinePosition(event.parsedDate);
+                handle.style.left = position + '%';
+
+                // Drop in handle
+                setTimeout(() => {
+                    handle.style.visibility = 'visible';
+                    handle.classList.add('drop-in');
+
+                    setTimeout(() => {
+                        handle.classList.remove('drop-in');
+                        isAnimating = false;
+                    }, 320);
+                }, 0);
+
+                // Animate map
+                map.flyTo({
+                    center: event.coordinates,
+                    zoom: 5,
+                    duration: 2000,
+                    easing: function(t) {
+                        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+                    }
+                });
+
+                // Update navigation buttons
+                updateNavigationButtons();
+            } else if (!hideHandle && events[currentEventIndex]) {
+                // Position and show handle if not hiding it
+                const position = getTimelinePosition(events[currentEventIndex].parsedDate);
+                handle.style.left = position + '%';
+
+                // Drop in immediately
+                setTimeout(() => {
+                    handle.style.visibility = 'visible';
+                    handle.classList.add('drop-in');
+
+                    setTimeout(() => {
+                        handle.classList.remove('drop-in');
+                        isAnimating = false;
+                    }, 320);
+                }, 0);
+            } else {
+                // Keep handle hidden
+                isAnimating = false;
+            }
+        }, 1200);
+    } else {
+        // No animation, just update content
+        createTimelineMarkers();
+        createMonthLabels();
+        if (!hideHandle) {
+            updateTimelineHandle();
+        }
+    }
+}
+
 // Go to specific event
-function goToEvent(index) {
+function goToEvent(index, withYearSwitch = false, initialDrop = false) {
     currentEventIndex = index;
     const event = events[index];
+    const eventYear = event.parsedDate.getFullYear();
+
+    // Switch year if needed
+    if (eventYear !== currentYear) {
+        switchToYear(eventYear, !withYearSwitch);
+    } else {
+        // Update markers for current year
+        createTimelineMarkers();
+    }
 
     updateEventContent(event);
     updateBorders(event.parsedDate);
     createEventMarkers();
-    createTimelineMarkers();
     createTimelineYearLabels();
-    updateTimelineHandle();
+    if (eventYear === currentYear) {
+        if (initialDrop) {
+            // Trigger drop-in animation for initial load
+            const handle = document.getElementById('timeline-handle');
+            const position = getTimelinePosition(event.parsedDate);
+            handle.style.left = position + '%';
+
+            setTimeout(() => {
+                handle.style.visibility = 'visible';
+                handle.classList.add('drop-in');
+
+                setTimeout(() => {
+                    handle.classList.remove('drop-in');
+                }, 320);
+            }, 0);
+        } else {
+            updateTimelineHandle();
+        }
+    }
+
+    // Calculate distance-based duration for smoother long transitions
+    const currentCenter = map.getCenter();
+    const targetCenter = event.coordinates;
+
+    // Calculate distance using Haversine formula approximation
+    const lat1 = currentCenter.lat * Math.PI / 180;
+    const lat2 = targetCenter[1] * Math.PI / 180;
+    const lng1 = currentCenter.lng * Math.PI / 180;
+    const lng2 = targetCenter[0] * Math.PI / 180;
+
+    const dLat = lat2 - lat1;
+    const dLng = lng2 - lng1;
+
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1) * Math.cos(lat2) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = c * 6371; // Earth radius in km
+
+    // Scale duration based on distance: min 2s, max 8s for very long distances
+    // Short distances (< 500km): 2-3 seconds
+    // Medium distances (500-2000km): 3-5 seconds
+    // Long distances (> 2000km): 5-8 seconds
+    const minDuration = 2000;
+    const maxDuration = 8000;
+    const duration = Math.min(maxDuration, minDuration + (distance / 500) * 1000);
 
     map.flyTo({
         center: event.coordinates,
         zoom: 5,
-        duration: 1000
+        duration: duration,
+        easing: function(t) {
+            // Smoother easing function (ease-in-out cubic)
+            return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        }
     });
+
+    // Update navigation button states
+    updateNavigationButtons();
 }
-// Convert timeline position (0-100%) to a date (respects year boundaries)
+// Convert timeline position (0-100%) to a date within current year
 function getDateFromTimelinePosition(percent) {
-    const minDate = events[0].parsedDate;
-    const maxDate = events[events.length - 1].parsedDate;
-    const startYear = minDate.getFullYear();
-    const endYear = maxDate.getFullYear();
-    const totalYears = endYear - startYear + 1;
+    const yearProgress = percent / 100;
 
-    const yearSectionWidth = 100 / totalYears;
-    const yearIndex = Math.floor(percent / yearSectionWidth);
-    const yearProgress = (percent % yearSectionWidth) / yearSectionWidth;
-
-    const targetYear = startYear + yearIndex;
-    const yearStart = new Date(targetYear, 0, 1);
-    const yearEnd = new Date(targetYear, 11, 31, 23, 59, 59);
+    const yearStart = new Date(currentYear, 0, 1);
+    const yearEnd = new Date(currentYear, 11, 31, 23, 59, 59);
     const yearDuration = yearEnd - yearStart;
 
     return new Date(yearStart.getTime() + (yearDuration * yearProgress));
@@ -790,39 +1077,62 @@ function initTimelineDragging() {
     const handle = document.getElementById('timeline-handle');
     const timeline = document.getElementById('timeline');
     const tooltip = document.getElementById('timeline-tooltip');
+    let animationFrameId = null;
 
     handle.addEventListener('mousedown', (e) => {
         isDragging = true;
-        timelineRect = timeline.getBoundingClientRect();
+        handle.classList.remove('animating');
         tooltip.classList.remove('hidden');
+        e.preventDefault();
     });
 
     document.addEventListener('mousemove', (e) => {
         if (!isDragging) return;
 
-        const x = e.clientX - timelineRect.left;
-        const percent = Math.max(0, Math.min(1, x / timelineRect.width)) * 100;
+        // Use requestAnimationFrame for smooth updates
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
 
-        const currentTime = getDateFromTimelinePosition(percent);
+        animationFrameId = requestAnimationFrame(() => {
+            // Recalculate timeline rect on each move for accuracy
+            const timelineRect = timeline.getBoundingClientRect();
+            const x = e.clientX - timelineRect.left;
+            const percent = Math.max(0, Math.min(1, x / timelineRect.width)) * 100;
 
-        let nearestIndex = 0;
-        let nearestDiff = Infinity;
-        events.forEach((event, index) => {
-            const diff = Math.abs(event.parsedDate.getTime() - currentTime.getTime());
-            if (diff < nearestDiff) {
-                nearestDiff = diff;
-                nearestIndex = index;
-            }
-        });
+            const currentTime = getDateFromTimelinePosition(percent);
 
-        handle.style.left = percent + '%';
+            // Only consider events from current year
+            let nearestIndex = 0;
+            let nearestDiff = Infinity;
+            let markerIndex = 0;
+            events.forEach((event, index) => {
+                if (event.parsedDate.getFullYear() === currentYear) {
+                    const diff = Math.abs(event.parsedDate.getTime() - currentTime.getTime());
+                    if (diff < nearestDiff) {
+                        nearestDiff = diff;
+                        nearestIndex = index;
+                    }
+                }
+            });
 
-        const event = events[nearestIndex];
-        document.getElementById('tooltip-date').textContent = formatEventDate(event.date);
-        document.getElementById('tooltip-title').textContent = currentLanguage === 'sv' ? event.title_sv : event.title_en;
+            handle.style.left = percent + '%';
 
-        document.querySelectorAll('.timeline-marker').forEach((marker, index) => {
-            marker.classList.toggle('active', index === nearestIndex);
+            const event = events[nearestIndex];
+            document.getElementById('tooltip-date').textContent = formatEventDate(event.date);
+            document.getElementById('tooltip-title').textContent = currentLanguage === 'sv' ? event.title_sv : event.title_en;
+
+            // Update marker active states
+            const markers = document.querySelectorAll('.timeline-marker');
+            let currentYearMarkerIndex = 0;
+            events.forEach((evt, idx) => {
+                if (evt.parsedDate.getFullYear() === currentYear) {
+                    if (markers[currentYearMarkerIndex]) {
+                        markers[currentYearMarkerIndex].classList.toggle('active', idx === nearestIndex);
+                    }
+                    currentYearMarkerIndex++;
+                }
+            });
         });
     });
 
@@ -831,16 +1141,23 @@ function initTimelineDragging() {
         isDragging = false;
         tooltip.classList.add('hidden');
 
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
+
         const handleLeft = parseFloat(handle.style.left);
         const currentTime = getDateFromTimelinePosition(handleLeft);
 
+        // Only consider events from current year
         let nearestIndex = 0;
         let nearestDiff = Infinity;
         events.forEach((event, index) => {
-            const diff = Math.abs(event.parsedDate.getTime() - currentTime.getTime());
-            if (diff < nearestDiff) {
-                nearestDiff = diff;
-                nearestIndex = index;
+            if (event.parsedDate.getFullYear() === currentYear) {
+                const diff = Math.abs(event.parsedDate.getTime() - currentTime.getTime());
+                if (diff < nearestDiff) {
+                    nearestDiff = diff;
+                    nearestIndex = index;
+                }
             }
         });
 
@@ -848,16 +1165,34 @@ function initTimelineDragging() {
     });
 }
 
+// Update navigation button states
+function updateNavigationButtons() {
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+
+    if (currentEventIndex === 0) {
+        prevBtn.classList.add('disabled');
+    } else {
+        prevBtn.classList.remove('disabled');
+    }
+
+    if (currentEventIndex === events.length - 1) {
+        nextBtn.classList.add('disabled');
+    } else {
+        nextBtn.classList.remove('disabled');
+    }
+}
+
 // Navigation buttons
 document.getElementById('prev-btn').addEventListener('click', () => {
     if (currentEventIndex > 0) {
-        goToEvent(currentEventIndex - 1);
+        goToEvent(currentEventIndex - 1, true);
     }
 });
 
 document.getElementById('next-btn').addEventListener('click', () => {
     if (currentEventIndex < events.length - 1) {
-        goToEvent(currentEventIndex + 1);
+        goToEvent(currentEventIndex + 1, true);
     }
 });
 
@@ -868,6 +1203,24 @@ document.getElementById('zoom-in').addEventListener('click', () => {
 
 document.getElementById('zoom-out').addEventListener('click', () => {
     map.zoomOut();
+});
+
+// Handle missing images gracefully (suppress console errors for missing sprite images)
+map.on('styleimagemissing', (e) => {
+    // Create a minimal placeholder image to prevent errors
+    const width = 64;
+    const height = 64;
+    const data = new Uint8Array(width * height * 4);
+
+    // Fill with transparent pixels
+    for (let i = 0; i < data.length; i += 4) {
+        data[i] = 0;     // R
+        data[i + 1] = 0; // G
+        data[i + 2] = 0; // B
+        data[i + 3] = 0; // A (transparent)
+    }
+
+    map.addImage(e.id, { width, height, data });
 });
 
 // Initialize when map is loaded
@@ -882,11 +1235,31 @@ map.on('load', async () => {
     // Update all UI texts
     updateUITexts();
 
+    // Load Sweden overlay
+    await loadSwedenOverlay();
+
     await loadEvents();
+
+    // Set current year to first event's year
+    if (events.length > 0) {
+        currentYear = events[0].parsedDate.getFullYear();
+    }
+
     createTimelineYearLabels();
     createTimelineMarkers();
     initTimelineDragging();
-    goToEvent(0);
+
+    // Hide handle initially, then drop it in
+    const handle = document.getElementById('timeline-handle');
+    handle.style.visibility = 'hidden';
+
+    goToEvent(0, false, true); // Pass true for initial drop animation
+
+    // Fade out loading screen after everything is loaded
+    setTimeout(() => {
+        const loadingScreen = document.getElementById('loading-screen');
+        loadingScreen.classList.add('fade-out');
+    }, 500);
 });
 
 // Update legend labels based on current language
@@ -935,19 +1308,37 @@ function updateInfoOverlayTexts() {
         const paragraphs = columns[0].querySelectorAll('p');
         paragraphs[0].textContent = t('infoOverlay.purposeText1');
         paragraphs[1].textContent = t('infoOverlay.purposeText2');
+        const exploreBtn = columns[0].querySelector('#explore-timeline-btn span');
+        if (exploreBtn) exploreBtn.textContent = t('infoOverlay.exploreButton');
     }
 
     if (columns[1]) {
         columns[1].querySelector('h2').textContent = t('infoOverlay.featuresTitle');
-        const features = columns[1].querySelectorAll('.info-features li span');
+        const features = columns[1].querySelectorAll('.info-features li > span');
         if (features[0]) features[0].textContent = t('infoOverlay.feature1');
         if (features[1]) features[1].textContent = t('infoOverlay.feature2');
         if (features[2]) features[2].textContent = t('infoOverlay.feature3');
+        if (features[3]) features[3].textContent = t('infoOverlay.feature4');
+        if (features[4]) features[4].textContent = t('infoOverlay.feature5');
+
+        // Update demo legend label
+        const demoLegendLabel = columns[1].querySelector('.demo-legend-label');
+        if (demoLegendLabel) {
+            const text = currentLanguage === 'sv' ? demoLegendLabel.getAttribute('data-sv') : demoLegendLabel.getAttribute('data-en');
+            demoLegendLabel.textContent = text;
+        }
     }
 
-    document.querySelector('.info-credits h3').textContent = t('infoOverlay.creditsTitle');
-    const creditsP = document.querySelector('.info-credits .credits');
-    creditsP.innerHTML = `<strong>${t('infoOverlay.creditsLabel')}</strong> ${t('infoOverlay.creditsText')} <a href="http://www.stanford.edu/group/spatialhistory/" target="_blank" rel="noopener">The Spatial History Project</a>`;
+    if (columns[2]) {
+        columns[2].querySelector('h2').textContent = t('infoOverlay.creditsTitle');
+        const creditsP = columns[2].querySelectorAll('.credits');
+        if (creditsP[0]) {
+            creditsP[0].innerHTML = `<strong>${t('infoOverlay.creditsLabel')}</strong> ${t('infoOverlay.creditsText')} <a href="http://www.stanford.edu/group/spatialhistory/" target="_blank" rel="noopener">The Spatial History Project</a>`;
+        }
+        if (creditsP[1]) {
+            creditsP[1].innerHTML = `<strong>${t('infoOverlay.swedenMapLabel')}</strong> ${t('infoOverlay.swedenMapText')} <a href="https://simplemaps.com/gis/country/se#all" target="_blank" rel="noopener">SimpleMaps</a>. <a href="https://creativecommons.org/licenses/by/4.0/#ref-appropriate-credit" target="_blank" rel="noopener">CC BY 4.0 License</a>`;
+        }
+    }
 }
 
 // Language switching
@@ -995,6 +1386,8 @@ async function switchLanguage() {
 
     // Change style and restore state
     map.once('styledata', () => {
+        // Re-add Sweden overlay
+        loadSwedenOverlay();
         // Re-add borders after style loads
         if (events.length > 0) {
             updateBorders(events[currentEventIndex].parsedDate);
@@ -1240,26 +1633,6 @@ document.getElementById('back-to-info-btn').addEventListener('click', () => {
 // Explore timeline button handler
 document.getElementById('explore-timeline-btn').addEventListener('click', () => {
     document.getElementById('info-overlay').classList.add('hidden');
-});
-
-// Audio toggle handler
-const audioToggle = document.getElementById('audio-toggle');
-
-audioToggle.addEventListener('change', (e) => {
-    const isAudioOn = e.target.checked;
-    console.log('Audio toggle:', isAudioOn ? 'ON' : 'OFF');
-    // TODO: Implement audio functionality here
-});
-
-// Make toggle labels clickable
-document.querySelector('.toggle-label-off').addEventListener('click', () => {
-    audioToggle.checked = false;
-    audioToggle.dispatchEvent(new Event('change'));
-});
-
-document.querySelector('.toggle-label-on').addEventListener('click', () => {
-    audioToggle.checked = true;
-    audioToggle.dispatchEvent(new Event('change'));
 });
 
 // Image overlay handlers

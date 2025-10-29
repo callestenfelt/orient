@@ -11,12 +11,14 @@
     },
     "legend": {
       "title": "KARTFÖRKLARING",
+      "header": "Markerade områden på kartan",
       "germany": "Tyskland",
       "germanyOcc": "Tyskland - ockuperat",
       "italy": "Italien",
       "italyOcc": "Italien - ockuperat",
       "axis": "Övriga axelmakter",
-      "axisOcc": "Övriga axelmakter - ockuperat"
+      "axisOcc": "Övriga axelmakter - ockuperat",
+      "sweden": "Sverige"
     },
     "timeline": {
       "year": "År"
@@ -67,22 +69,32 @@
       "text": "Områden som kontrollerades av andra axelmakter än Tyskland och Italien, främst Rumänien, Ungern och Bulgarien.",
       "imageCaption": "Észak-Erdél -- Romania, Transylvania"
     },
+    "sweden": {
+      "title": "Sverige",
+      "text": "Sverige förblev neutralt under andra världskriget men spelade en viktig roll genom att ta emot flyktingar, särskilt judiska barn och danska judar. Landet hjälpte också till med humanitära insatser mot krigets slut.",
+      "imageCaption": "Sverige under andra världskriget"
+    },
     "disclaimer": "Kartan fokuserar på Europa under andra världskriget och visar hur gränser och ockuperade områden förändrades mellan 1938 och 1946. Händelser utanför Europa ingår inte."
   },
   "imageCaption": {
     "default": "Foto: Arkiv"
   },
   "infoOverlay": {
-    "title": "Om tidslinjen",
-    "purposeTitle": "Syfte",
+    "title": "En tidslinje över Europas historia 1933–1948",
+    "purposeTitle": "Ta del av historien",
     "purposeText1": "Den här tidslinjen visar viktiga händelser under andra världskriget mellan 1938 och 1946. Genom att kombinera en interaktiv karta med historiska händelser kan du följa krigets progression och förstå hur gränser och kontrollerade områden förändrades över tid.",
     "purposeText2": "Varje händelse är noggrant dokumenterad med text, bilder och geografisk placering för att ge en djupare förståelse av krigets omfattning och påverkan på Europa.",
+    "exploreButton": "Utforska tidslinjen",
     "featuresTitle": "Funktioner",
     "feature1": "Använd pilarna för att gå till nästa händelse",
     "feature2": "Klicka på bilder för att se dem större",
     "feature3": "Dra i handtaget för att röra dig i tid",
+    "feature4": "Klicka på årtalsknapparna för att hoppa mellan år",
+    "feature5": "Klicka på kartförklaringen för att läsa mer om områdena",
     "creditsTitle": "Datakällor och krediteringar",
     "creditsLabel": "Historiska gränser:",
-    "creditsText": "European Borders 1938-1945 dataset från Stanford University. Copyright 2014 Stanford University. All rights reserved."
+    "creditsText": "European Borders 1938-1945 dataset från Stanford University. Copyright 2014 Stanford University. All rights reserved.",
+    "swedenMapLabel": "Sveriges gränser:",
+    "swedenMapText": "GIS-data från SimpleMaps, licensierad under CC BY 4.0."
   }
 }

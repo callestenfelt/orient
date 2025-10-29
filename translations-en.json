@@ -11,12 +11,14 @@
     },
     "legend": {
       "title": "MAP INFORMATION",
+      "header": "Marked Areas on the Map",
       "germany": "Germany",
       "germanyOcc": "Germany - Occupied",
       "italy": "Italy",
       "italyOcc": "Italy - occupied",
       "axis": "Other Axis",
-      "axisOcc": "Other axis - occupied"
+      "axisOcc": "Other axis - occupied",
+      "sweden": "Sweden"
     },
     "timeline": {
       "year": "Year"
@@ -67,22 +69,32 @@
       "text": "Areas controlled by Axis powers other than Germany and Italy, primarily Romania, Hungary, and Bulgaria.",
       "imageCaption": "Észak-Erdél -- Romania, Transylvania"
     },
+    "sweden": {
+      "title": "Sweden",
+      "text": "Sweden remained neutral during World War II but played an important role by receiving refugees, particularly Jewish children and Danish Jews. The country also helped with humanitarian efforts towards the end of the war.",
+      "imageCaption": "Sweden during World War II"
+    },
     "disclaimer": "The map focuses on Europe during World War II and shows how borders and occupied areas changed between 1938 and 1946. Events outside Europe are not included."
   },
   "imageCaption": {
     "default": "Photo: Archive"
   },
   "infoOverlay": {
-    "title": "About the Timeline",
-    "purposeTitle": "Purpose",
+    "title": "A Timeline of European History 1933–1948",
+    "purposeTitle": "Explore History",
     "purposeText1": "This timeline shows important events during World War II between 1938 and 1946. By combining an interactive map with historical events, you can follow the progression of the war and understand how borders and controlled areas changed over time.",
     "purposeText2": "Each event is carefully documented with text, images, and geographic placement to provide a deeper understanding of the war's scope and impact on Europe.",
+    "exploreButton": "Explore the timeline",
     "featuresTitle": "Features",
     "feature1": "Use the arrows to go to the next event",
     "feature2": "Click on images to view them larger",
     "feature3": "Drag the handle to move through time",
+    "feature4": "Click on year buttons to jump between years",
+    "feature5": "Click on the legend to learn more about the areas",
     "creditsTitle": "Data Sources and Credits",
     "creditsLabel": "Historical borders:",
-    "creditsText": "European Borders 1938-1945 dataset from Stanford University. Copyright 2014 Stanford University. All rights reserved."
+    "creditsText": "European Borders 1938-1945 dataset from Stanford University. Copyright 2014 Stanford University. All rights reserved.",
+    "swedenMapLabel": "Sweden borders:",
+    "swedenMapText": "GIS data from SimpleMaps, licensed under CC BY 4.0."
   }
 }

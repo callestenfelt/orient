@@ -4,10 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orient - WW2 Timeline</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🗺️</text></svg>">
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div id="loading-text">
+            <span data-sv="Laddar" data-en="Loading">Laddar</span><span id="loading-dots"></span>
+        </div>
+    </div>
+
     <!-- Split Layout Container -->
     <div id="app-container">
         
@@ -23,7 +31,7 @@
 
                     <!-- Legend -->
                     <div id="map-legend">
-                        <div class="legend-column">
+                        <div class="legend-grid">
                             <div class="legend-item" data-territory="germany">
                                 <span class="legend-color" style="background: var(--map-germany);"></span>
                                 <span class="legend-label" data-sv="Tyskland" data-en="Germany">Tyskland</span>
@@ -32,8 +40,6 @@
                                 <span class="legend-color" style="background: var(--map-germany-occ);"></span>
                                 <span class="legend-label" data-sv="Tyskland - ockuperat" data-en="Germany - Occupied">Tyskland - ockuperat</span>
                             </div>
-                        </div>
-                        <div class="legend-column">
                             <div class="legend-item" data-territory="italy">
                                 <span class="legend-color" style="background: var(--map-italy);"></span>
                                 <span class="legend-label" data-sv="Italien" data-en="Italy">Italien</span>
@@ -42,8 +48,6 @@
                                 <span class="legend-color" style="background: var(--map-italy-occ);"></span>
                                 <span class="legend-label" data-sv="Italien - ockuperat" data-en="Italy - occupied">Italien - ockuperat</span>
                             </div>
-                        </div>
-                        <div class="legend-column">
                             <div class="legend-item" data-territory="axis">
                                 <span class="legend-color" style="background: var(--map-axis);"></span>
                                 <span class="legend-label" data-sv="Övriga axelmakter" data-en="Other Axis">Övriga axelmakter</span>
@@ -52,8 +56,6 @@
                                 <span class="legend-color" style="background: var(--map-axis-occ);"></span>
                                 <span class="legend-label" data-sv="Övriga axelmakter - ockuperat" data-en="Other axis - occupied">Övriga axelmakter - ockuperat</span>
                             </div>
-                        </div>
-                        <div class="legend-column">
                             <div class="legend-item" data-territory="sweden">
                                 <span class="legend-color" style="background: var(--map-sweden);"></span>
                                 <span class="legend-label" data-sv="Sverige" data-en="Sweden">Sverige</span>
@@ -123,6 +125,9 @@
         <button id="next-btn" class="timeline-nav-btn" aria-label="Next event">
             <img src="gfx/angle.svg" alt=">" style="transform: scaleX(-1);">
         </button>
+
+        <div id="timeline-overlay-left"></div>
+        <div id="timeline-overlay-right"></div>
     </div>
 
     <!-- Information Overlay -->
@@ -144,13 +149,30 @@
                     <div class="info-column">
                         <h2>Funktioner</h2>
                         <ul class="info-features">
-                            <li><img src="gfx/helpscr_next.svg" alt="" class="feature-icon"><span>Använd pilarna för att gå till nästa händelse</span></li>
-                            <li><img src="gfx/helpscr_eye.svg" alt="" class="feature-icon"><span>Klicka på bilder för att se dem större</span></li>
-                            <li><img src="gfx/helpscreen_handle.svg" alt="" class="feature-icon feature-icon-handle"><span>Dra i handtaget för att röra dig i tid</span></li>
+                            <li><div class="feature-icon"><img src="gfx/helpscr_next.svg" alt=""></div><span>Använd pilarna för att gå till nästa händelse</span></li>
+                            <li><div class="feature-icon"><img src="gfx/helpscr_eye.svg" alt=""></div><span>Klicka på bilder för att se dem större</span></li>
+                            <li><div class="feature-icon-handle"><img src="gfx/helpscreen_handle.svg" alt=""></div><span>Dra i handtaget för att röra dig i tid</span></li>
+                            <li>
+                                <div class="feature-icon feature-demo-pill">
+                                    <button class="demo-year-pill">1942</button>
+                                </div>
+                                <span>Klicka på årtalsknapparna för att hoppa mellan år</span>
+                            </li>
+                            <li>
+                                <div class="feature-icon feature-demo-legend">
+                                    <div class="demo-legend-item">
+                                        <span class="demo-legend-color"></span>
+                                        <span class="demo-legend-label" data-sv="Område" data-en="Area">Område</span>
+                                    </div>
+                                </div>
+                                <span>Klicka på kartförklaringen för att läsa mer om områdena</span>
+                            </li>
                         </ul>
+                    </div>
 
-                        <div class="info-credits">
-                            <h3>Datakällor och krediteringar</h3>
+                    <div class="info-column">
+                        <h2>Datakällor och krediteringar</h2>
+                        <div class="credits-wrapper">
                             <p class="credits">
                                 <strong>Historiska gränser:</strong> European Borders 1938-1945 dataset från Stanford University.
                                 Copyright 2014 Stanford University. All rights reserved.
@@ -211,4 +233,3 @@
     <script src="app.js"></script>
 </body>
 </html>
-<!-- Updated: den 28 okt 2025 00:00:46 -->
