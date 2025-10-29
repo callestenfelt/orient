@@ -1361,13 +1361,14 @@ body {
     opacity: 0;
     z-index: 0;
     pointer-events: none;
+    animation-play-state: paused;
 }
 
-#explore-timeline-btn::before {
+#explore-timeline-btn.idle::before {
     animation: exploreButtonPulse 2.4s ease-out infinite;
 }
 
-#explore-timeline-btn::after {
+#explore-timeline-btn.idle::after {
     animation: exploreButtonPulse 2.4s ease-out 0.4s infinite;
 }
 

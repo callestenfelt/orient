@@ -1171,6 +1171,7 @@ function initTimelineDragging() {
 function initIdleDetection() {
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
+    const exploreBtn = document.getElementById('explore-timeline-btn');
     let idleTimer = null;
     const IDLE_DELAY = 3000; // 3 seconds
 
@@ -1178,6 +1179,9 @@ function initIdleDetection() {
         // Remove idle class from buttons
         prevBtn.classList.remove('idle');
         nextBtn.classList.remove('idle');
+        if (exploreBtn) {
+            exploreBtn.classList.remove('idle');
+        }
 
         // Clear existing timer
         if (idleTimer) {
@@ -1188,6 +1192,9 @@ function initIdleDetection() {
         idleTimer = setTimeout(() => {
             prevBtn.classList.add('idle');
             nextBtn.classList.add('idle');
+            if (exploreBtn) {
+                exploreBtn.classList.add('idle');
+            }
         }, IDLE_DELAY);
     }
 
