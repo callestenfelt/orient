@@ -1762,17 +1762,39 @@ document.getElementById('explore-timeline-btn').addEventListener('click', () => 
 });
 
 // Image overlay handlers
-document.getElementById('event-image-container').addEventListener('click', () => {
+document.getElementById('event-image-container').addEventListener('click', (e) => {
     const imageSrc = document.getElementById('event-image').src;
     const imageCaption = document.getElementById('event-image-caption').textContent;
     const imageOverlay = document.getElementById('image-overlay');
     const imageOverlayContent = document.getElementById('image-overlay-content');
+    const clickedImage = document.getElementById('event-image');
+
+    // Get the position and size of the clicked image
+    const rect = clickedImage.getBoundingClientRect();
+    const viewportCenterX = window.innerWidth / 2;
+    const viewportCenterY = window.innerHeight / 2;
+    const imageCenterX = rect.left + rect.width / 2;
+    const imageCenterY = rect.top + rect.height / 2;
+
+    // Calculate offset from viewport center to image center
+    const offsetX = imageCenterX - viewportCenterX;
+    const offsetY = imageCenterY - viewportCenterY;
+
+    // Calculate initial scale based on clicked image size vs overlay size
+    // Estimate overlay will be roughly 80vw wide, so scale accordingly
+    const estimatedOverlayWidth = window.innerWidth * 0.8;
+    const initialScale = Math.min(rect.width / estimatedOverlayWidth, 0.3);
 
     document.getElementById('overlay-image').src = imageSrc;
     document.getElementById('overlay-image-caption').textContent = imageCaption;
 
+    // Set initial position and scale
+    imageOverlayContent.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${initialScale})`;
+    imageOverlayContent.style.opacity = '0';
+
     // Remove hidden class and trigger reflow
     imageOverlay.classList.remove('hidden');
+    void imageOverlayContent.offsetWidth; // Force reflow
 
     // Trigger scale animation after a brief delay
     setTimeout(() => {
@@ -1787,9 +1809,13 @@ document.getElementById('close-image-btn').addEventListener('click', () => {
     // Remove scale-in class to trigger reverse animation
     imageOverlayContent.classList.remove('scale-in');
 
+    // Also fade out the background by removing the inline style
+    imageOverlay.style.background = 'rgba(0, 0, 0, 0)';
+
     // Wait for animation to complete (400ms) before hiding
     setTimeout(() => {
         imageOverlay.classList.add('hidden');
+        imageOverlay.style.background = ''; // Reset for next time
     }, 400);
 });
 
@@ -1802,9 +1828,13 @@ document.getElementById('image-overlay').addEventListener('click', (e) => {
         // Remove scale-in class to trigger reverse animation
         imageOverlayContent.classList.remove('scale-in');
 
+        // Also fade out the background
+        imageOverlay.style.background = 'rgba(0, 0, 0, 0)';
+
         // Wait for animation to complete (400ms) before hiding
         setTimeout(() => {
             imageOverlay.classList.add('hidden');
+            imageOverlay.style.background = ''; // Reset for next time
         }, 400);
     }
 });
