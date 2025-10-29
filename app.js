@@ -1167,6 +1167,40 @@ function initTimelineDragging() {
     });
 }
 
+// Idle detection for navigation button pulse animation
+function initIdleDetection() {
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    let idleTimer = null;
+    const IDLE_DELAY = 3000; // 3 seconds
+
+    function resetIdle() {
+        // Remove idle class from buttons
+        prevBtn.classList.remove('idle');
+        nextBtn.classList.remove('idle');
+
+        // Clear existing timer
+        if (idleTimer) {
+            clearTimeout(idleTimer);
+        }
+
+        // Set new timer to add idle class after delay
+        idleTimer = setTimeout(() => {
+            prevBtn.classList.add('idle');
+            nextBtn.classList.add('idle');
+        }, IDLE_DELAY);
+    }
+
+    // Listen to all user interaction events
+    const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
+    events.forEach(event => {
+        document.addEventListener(event, resetIdle, { passive: true });
+    });
+
+    // Start idle timer on load
+    resetIdle();
+}
+
 // Update navigation button states
 function updateNavigationButtons() {
     const prevBtn = document.getElementById('prev-btn');
@@ -1250,6 +1284,7 @@ map.on('load', async () => {
     createTimelineYearLabels();
     createTimelineMarkers();
     initTimelineDragging();
+    initIdleDetection();
 
     // Hide handle initially, then drop it in
     const handle = document.getElementById('timeline-handle');
