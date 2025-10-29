@@ -1758,14 +1758,14 @@ body {
 
 #close-image-btn {
     position: fixed;
-    top: calc(10vh - 30px);
-    right: calc(10vw - 30px);
-    width: 80px;
-    height: 80px;
+    top: calc(10vh - 20px);
+    right: calc(10vw - 20px);
+    width: 60px;
+    height: 60px;
     background: var(--color-primary);
     border: none;
     border-radius: 50%;
-    font-size: 48px;
+    font-size: 36px;
     line-height: 1;
     color: var(--color-dark-blue);
     cursor: pointer;
