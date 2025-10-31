@@ -2641,11 +2641,16 @@ a,
     /* Touch device specific styles */
 
     button:active,
-    .timeline-nav-btn:active,
     .zoom-btn:active,
     .control-btn:active {
         opacity: 0.8;
         transform: scale(0.95);
+    }
+
+    /* Timeline nav buttons need to preserve translateY on mobile */
+    .timeline-nav-btn:active {
+        opacity: 0.8;
+        transform: translateY(-50%) scale(0.95);
     }
 
     .timeline-year-pill:active {
