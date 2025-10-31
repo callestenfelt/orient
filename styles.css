@@ -2134,6 +2134,8 @@ body {
 
     .legend-grid {
         grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        grid-auto-flow: row;
         column-gap: 10px;
         row-gap: 8px;
     }
@@ -2461,6 +2463,8 @@ body {
 
     .legend-grid {
         grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        grid-auto-flow: row;
         column-gap: 10px;
         row-gap: 8px;
     }
