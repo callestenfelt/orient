@@ -2977,8 +2977,7 @@ a,
         transition: transform 0.3s ease;
     }
 
-    .info-language-toggle:hover span::after,
-    .info-language-toggle:active span::after {
+    .info-language-toggle:hover span::after {
         transform: scaleX(1);
     }
 }
