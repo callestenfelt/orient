@@ -2140,7 +2140,8 @@ body {
 
     .legend-item {
         padding: 5px 8px;
-        height: 20px;
+        min-height: 20px;
+        box-sizing: border-box;
     }
 
     .legend-label {
@@ -2465,7 +2466,8 @@ body {
     }
 
     .legend-item {
-        height: 20px;
+        min-height: 20px;
+        box-sizing: border-box;
     }
 
     .legend-label {
