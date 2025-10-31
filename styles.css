@@ -2264,6 +2264,7 @@ body {
     /* Content section - add more top padding to avoid timeline overlap */
     #event-content {
         padding: 80px 25px 25px 25px;
+        min-height: 100%;
     }
 
     #event-date-label {
@@ -2583,6 +2584,7 @@ body {
     /* Content section - add more top padding to avoid timeline overlap */
     #event-content {
         padding: 70px 15px 20px 15px;
+        min-height: 100%;
     }
 
     #event-date-label {
@@ -2787,6 +2789,7 @@ body {
 
     #event-content {
         padding: 20px 15px 15px 15px;
+        min-height: 100%;
     }
 
     #event-title {
