@@ -2128,11 +2128,7 @@ document.getElementById('image-overlay').addEventListener('click', (e) => {
     }
 });
 
-// Mobile Menu Handlers
-const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
-const closeMobileMenuBtn = document.getElementById('close-mobile-menu-btn');
-const mobileHelpBtn = document.getElementById('mobile-help-btn');
-const mobileLanguageBtn = document.getElementById('mobile-language-btn');
+// Mobile Hamburger Menu Handler
 const contentTopControls = document.getElementById('content-top-controls');
 
 // Check if on mobile and add mobile-menu class
@@ -2147,34 +2143,11 @@ function checkMobileMenu() {
     }
 }
 
-// Open mobile menu when clicking hamburger
+// Open info overlay when clicking hamburger on mobile
 contentTopControls.addEventListener('click', () => {
     if (contentTopControls.classList.contains('mobile-menu')) {
-        mobileMenuOverlay.classList.remove('hidden');
+        document.getElementById('info-overlay').classList.remove('hidden');
     }
-});
-
-// Close mobile menu
-closeMobileMenuBtn.addEventListener('click', () => {
-    mobileMenuOverlay.classList.add('hidden');
-});
-
-// Mobile help button - open info overlay
-mobileHelpBtn.addEventListener('click', () => {
-    mobileMenuOverlay.classList.add('hidden');
-    document.getElementById('info-overlay').classList.remove('hidden');
-});
-
-// Mobile language button - toggle language
-mobileLanguageBtn.addEventListener('click', () => {
-    // Toggle language
-    currentLanguage = currentLanguage === 'sv' ? 'en' : 'sv';
-    loadTranslations(currentLanguage).then(() => {
-        updateAllTranslations();
-        // Update mobile language button text
-        document.getElementById('mobile-language-text').textContent = 
-            currentLanguage === 'sv' ? 'SVENSKA' : 'ENGLISH';
-    });
 });
 
 // Initialize on load
