@@ -2848,7 +2848,8 @@ a,
 
     /* Don't scale pill buttons */
     #legend-toggle:active,
-    #year-display:active {
+    #year-display:active,
+    .info-language-toggle:active {
         transform: none;
         opacity: 1;
     }
