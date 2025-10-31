@@ -2880,6 +2880,11 @@ a,
     }
 }
 
+/* Language toggle button - base styles */
+.info-language-toggle {
+    display: none;
+}
+
 /* Mobile: Full bleed info overlay */
 @media (max-width: 767px) {
     #info-overlay {
@@ -2928,7 +2933,7 @@ a,
 
     /* Language toggle button in info overlay - mobile only */
     .info-language-toggle {
-        display: flex;
+        display: flex !important;
         flex-direction: row;
         align-items: center;
         gap: 8px;
@@ -2955,13 +2960,6 @@ a,
 
     .info-language-toggle:active {
         opacity: 0.7;
-    }
-
-    /* Hide on desktop */
-    @media (min-width: 768px) {
-        .info-language-toggle {
-            display: none;
-        }
     }
 }
 
