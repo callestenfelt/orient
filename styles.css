@@ -1938,9 +1938,8 @@ body {
 
     #map-section {
         width: 100%;
-        height: 40vh;
-        min-height: 300px;
-        position: fixed;
+        aspect-ratio: 16 / 9;
+        position: relative;
         top: 0;
         left: 0;
         right: 0;
@@ -1949,20 +1948,17 @@ body {
 
     #content-section {
         width: 100%;
-        height: calc(100vh - 40vh);
-        position: fixed;
-        top: 40vh;
-        left: 0;
-        right: 0;
-        overflow-y: auto;
+        min-height: calc(100vh - 70px);
+        position: relative;
+        overflow-y: visible;
         overflow-x: hidden;
-        padding-top: 70px;
+        padding-top: 0;
         box-sizing: border-box;
     }
 
     #content-background {
-        position: fixed;
-        top: 40vh;
+        position: absolute;
+        top: 0;
         left: 0;
         right: 0;
         bottom: 0;
@@ -1971,8 +1967,8 @@ body {
 
     /* Timeline positioned between map and content - sticky */
     #timeline-container {
-        position: fixed;
-        top: 40vh;
+        position: sticky;
+        top: 0;
         left: 0;
         right: 0;
         height: 70px;
@@ -2381,14 +2377,14 @@ body {
 @media (max-width: 480px) {
     /* Reduce map height on portrait */
     #app-container {
-        height: 100vh;
-        overflow: hidden;
+        min-height: 100vh;
+        overflow-y: auto;
+        overflow-x: hidden;
     }
 
     #map-section {
-        height: 35vh;
-        min-height: 250px;
-        position: fixed;
+        aspect-ratio: 16 / 9;
+        position: relative;
         top: 0;
         left: 0;
         right: 0;
@@ -2396,20 +2392,17 @@ body {
     }
 
     #content-section {
-        height: calc(100vh - 35vh);
-        position: fixed;
-        top: 35vh;
-        left: 0;
-        right: 0;
-        overflow-y: auto;
+        min-height: calc(100vh - 60px);
+        position: relative;
+        overflow-y: visible;
         overflow-x: hidden;
-        padding-top: 60px;
+        padding-top: 0;
         box-sizing: border-box;
     }
 
     #content-background {
-        position: fixed;
-        top: 35vh;
+        position: absolute;
+        top: 0;
         left: 0;
         right: 0;
         bottom: 0;
@@ -2418,8 +2411,8 @@ body {
 
     /* Timeline positioned between map and content - sticky */
     #timeline-container {
-        position: fixed;
-        top: 35vh;
+        position: sticky;
+        top: 0;
         height: 60px;
         padding: 0;
         left: 0;
@@ -2753,13 +2746,14 @@ body {
 /* Landscape orientation - special handling for very short screens */
 @media (max-width: 767px) and (orientation: landscape) and (max-height: 500px) {
     #app-container {
-        height: 100vh;
-        overflow: hidden;
+        min-height: 100vh;
+        overflow-y: auto;
+        overflow-x: hidden;
     }
 
     #map-section {
-        height: 50vh;
-        position: fixed;
+        aspect-ratio: 16 / 9;
+        position: relative;
         top: 0;
         left: 0;
         right: 0;
@@ -2767,20 +2761,17 @@ body {
     }
 
     #content-section {
-        height: calc(100vh - 50vh);
-        position: fixed;
-        top: 50vh;
-        left: 0;
-        right: 0;
-        overflow-y: auto;
+        min-height: calc(100vh - 55px);
+        position: relative;
+        overflow-y: visible;
         overflow-x: hidden;
-        padding-top: 55px;
+        padding-top: 0;
         box-sizing: border-box;
     }
 
     #content-background {
-        position: fixed;
-        top: 50vh;
+        position: absolute;
+        top: 0;
         left: 0;
         right: 0;
         bottom: 0;
@@ -2788,8 +2779,8 @@ body {
     }
 
     #timeline-container {
-        position: fixed;
-        top: 50vh;
+        position: sticky;
+        top: 0;
         height: 55px;
         left: 0;
         right: 0;
