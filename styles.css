@@ -2937,33 +2937,36 @@ a,
         flex-direction: row;
         align-items: center;
         gap: 8px;
-        background: rgba(255, 0, 0, 0.3);
-        border: 2px solid red;
+        background: transparent;
+        border: none;
         cursor: pointer;
-        padding: 10px;
+        padding: 0;
         margin-bottom: 20px;
         width: fit-content;
         position: relative;
-        z-index: 10000;
+        z-index: 1;
     }
 
     .info-language-toggle img {
         width: 24px;
         height: 24px;
-        filter: brightness(0) invert(1);
+        filter: none;
         display: block;
     }
 
     .info-language-toggle span {
         font-size: 16px;
         font-weight: 600;
-        color: var(--color-white);
+        color: var(--color-dark-blue);
         line-height: 1;
-        display: block;
+        display: inline-block;
+        border-bottom: 1px solid var(--color-dark-blue);
+        transition: border-bottom-color 0.2s ease;
     }
 
-    .info-language-toggle:active {
-        opacity: 0.7;
+    .info-language-toggle:hover span,
+    .info-language-toggle:active span {
+        border-bottom-color: transparent;
     }
 }
 
