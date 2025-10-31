@@ -1379,6 +1379,14 @@ function initMobileLegendToggle() {
 
     // Toggle legend on button click
     toggleBtn.addEventListener('click', () => {
+        // Close year picker dropdown if open
+        const yearDropdown = document.getElementById('year-picker-dropdown');
+        const yearDisplay = document.getElementById('year-display');
+        if (yearDropdown && yearDisplay && !yearDropdown.classList.contains('collapsed')) {
+            yearDropdown.classList.add('collapsed');
+            yearDisplay.classList.remove('open');
+        }
+
         legend.classList.toggle('collapsed');
         toggleBtn.classList.toggle('open');
     });
@@ -1450,6 +1458,15 @@ function initMobileYearPicker() {
     yearDisplay.addEventListener('click', (e) => {
         if (isMobile()) {
             e.stopPropagation();
+
+            // Close legend dropdown if open
+            const legend = document.getElementById('map-legend');
+            const legendToggle = document.getElementById('legend-toggle');
+            if (legend && legendToggle && !legend.classList.contains('collapsed')) {
+                legend.classList.add('collapsed');
+                legendToggle.classList.remove('open');
+            }
+
             yearDropdown.classList.toggle('collapsed');
             yearDisplay.classList.toggle('open');
 
