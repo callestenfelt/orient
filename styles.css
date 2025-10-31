@@ -2798,6 +2798,13 @@ a,
         transform: scale(0.95);
     }
 
+    /* Don't scale pill buttons */
+    #legend-toggle:active,
+    #year-display:active {
+        transform: none;
+        opacity: 1;
+    }
+
     /* Timeline nav buttons need to preserve translateY on mobile */
     .timeline-nav-btn:active {
         opacity: 0.8;
