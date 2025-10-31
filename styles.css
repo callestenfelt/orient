@@ -2035,9 +2035,10 @@ body {
 
     /* Year display as dropdown button */
     #year-display {
-        font-size: 20px;
+        font-size: 13px;
         padding: 10px 18px;
         border-radius: 20px;
+        font-weight: 600;
         cursor: pointer;
         position: relative;
     }
@@ -2045,7 +2046,7 @@ body {
     #year-display::after {
         content: '▼';
         margin-left: 8px;
-        font-size: 14px;
+        font-size: 11px;
     }
 
     /* Make legend collapsible on mobile */
@@ -2359,13 +2360,14 @@ body {
     }
 
     #year-display {
-        font-size: 18px;
+        font-size: 12px;
         padding: 9px 16px;
         border-radius: 18px;
+        font-weight: 600;
     }
 
     #year-display::after {
-        font-size: 12px;
+        font-size: 10px;
     }
 
     #map-legend {
