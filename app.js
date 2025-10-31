@@ -1682,6 +1682,12 @@ async function switchLanguage() {
     const languageSpan = document.querySelector('#language-btn span');
     languageSpan.textContent = t('ui.buttons.language');
 
+    // Update info overlay language button text (mobile)
+    const infoLanguageText = document.getElementById('info-language-text');
+    if (infoLanguageText) {
+        infoLanguageText.textContent = t('ui.buttons.language');
+    }
+
     // Update legend labels
     updateLegendLabels();
 
@@ -2149,6 +2155,12 @@ contentTopControls.addEventListener('click', () => {
         document.getElementById('info-overlay').classList.remove('hidden');
     }
 });
+
+// Language toggle in info overlay (mobile)
+const infoLanguageBtn = document.getElementById('info-language-btn');
+if (infoLanguageBtn) {
+    infoLanguageBtn.addEventListener('click', switchLanguage);
+}
 
 // Initialize on load
 checkMobileMenu();
