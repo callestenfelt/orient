@@ -2937,18 +2937,21 @@ a,
         flex-direction: row;
         align-items: center;
         gap: 8px;
-        background: transparent;
-        border: none;
+        background: rgba(255, 0, 0, 0.3);
+        border: 2px solid red;
         cursor: pointer;
-        padding: 0;
+        padding: 10px;
         margin-bottom: 20px;
         width: fit-content;
+        position: relative;
+        z-index: 10000;
     }
 
     .info-language-toggle img {
         width: 24px;
         height: 24px;
         filter: brightness(0) invert(1);
+        display: block;
     }
 
     .info-language-toggle span {
@@ -2956,6 +2959,7 @@ a,
         font-weight: 600;
         color: var(--color-white);
         line-height: 1;
+        display: block;
     }
 
     .info-language-toggle:active {
