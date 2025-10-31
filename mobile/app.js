@@ -668,7 +668,7 @@ function createEventMarkers() {
 }
 
 // Update event content panel
-function updateEventContent(event) {
+function updateEventContent(event, preventScroll = false, scrollY = 0) {
     const contentEl = document.getElementById('event-content');
     const bgEl = document.getElementById('content-background');
 
@@ -692,6 +692,13 @@ function updateEventContent(event) {
 
         // Fade in
         contentEl.classList.remove('fade-out');
+
+        // Restore scroll position on mobile after content updates
+        if (preventScroll) {
+            requestAnimationFrame(() => {
+                window.scrollTo(0, scrollY);
+            });
+        }
     }, 300);
 }
 
@@ -1017,6 +1024,10 @@ function goToEvent(index, withYearSwitch = false, initialDrop = false) {
     const event = events[index];
     const eventYear = event.parsedDate.getFullYear();
 
+    // On mobile, prevent auto-scroll during content update
+    const scrollY = window.scrollY || window.pageYOffset;
+    const preventScroll = window.innerWidth <= 767;
+
     // Switch year if needed
     if (eventYear !== currentYear) {
         switchToYear(eventYear, !withYearSwitch);
@@ -1025,7 +1036,7 @@ function goToEvent(index, withYearSwitch = false, initialDrop = false) {
         createTimelineMarkers();
     }
 
-    updateEventContent(event);
+    updateEventContent(event, preventScroll, scrollY);
     updateBorders(event.parsedDate);
     createEventMarkers();
     createTimelineYearLabels();
