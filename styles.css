@@ -2950,7 +2950,7 @@ a,
     .info-language-toggle img {
         width: 24px;
         height: 24px;
-        filter: none;
+        filter: brightness(0) saturate(100%) invert(14%) sepia(85%) saturate(1817%) hue-rotate(194deg) brightness(91%) contrast(101%);
         display: block;
     }
 
