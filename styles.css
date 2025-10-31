@@ -53,6 +53,7 @@ body {
     width: 50%;
     position: relative;
     background: var(--color-grey-light);
+    z-index: 100;
 }
 
 #map {
@@ -423,7 +424,7 @@ body {
     gap: 20px;
     box-shadow: 0 0 40px -10px rgba(0,0,0,0.3),
                 0 0 25px -15px rgba(0,0,0,0.2);
-    z-index: 1000;
+    z-index: 80;
     overflow: visible;
 }
 
@@ -1943,7 +1944,7 @@ body {
         top: 0;
         left: 0;
         right: 0;
-        z-index: 100;
+        z-index: 100000;
     }
 
     #content-section {
@@ -2070,14 +2071,21 @@ body {
         position: fixed;
         top: 60px;
         left: 15px;
+        right: 15px;
         background: var(--color-dark-blue);
         border-radius: 15px;
         padding: 15px;
         box-shadow: 0 0 40px -10px rgba(0,0,0,0.3),
                     0 0 25px -15px rgba(0,0,0,0.2);
-        z-index: 2000;
+        z-index: 5000;
         max-height: calc(100vh - 150px);
         overflow-y: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    #year-picker-dropdown::-webkit-scrollbar {
+        display: none;
     }
 
     #year-picker-dropdown.collapsed {
@@ -2087,19 +2095,20 @@ body {
     #year-picker-dropdown:not(.collapsed) {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
+        gap: 10px;
     }
 
     .year-picker-btn {
         background: var(--color-white);
         border: none;
         color: var(--color-dark-blue);
-        padding: 10px 15px;
+        padding: 8px 20px;
         border-radius: 20px;
-        font-size: 13px;
+        font-size: 16px;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s ease;
+        height: 35px;
     }
 
     .year-picker-btn:active {
@@ -2122,10 +2131,11 @@ body {
         max-width: none;
         max-height: 60vh;
         overflow-y: auto;
-        z-index: 2000;
+        z-index: 5000;
         box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         border-radius: 12px;
         background: var(--color-white);
+        padding: 15px;
     }
 
     #map-legend.collapsed {
@@ -2141,8 +2151,8 @@ body {
     }
 
     .legend-item {
-        padding: 5px 8px;
-        min-height: 20px;
+        padding: 10px 12px;
+        min-height: 44px;
         box-sizing: border-box;
     }
 
@@ -2202,7 +2212,7 @@ body {
         border-radius: 50% !important;
         padding: 0 !important;
         display: block !important;
-        z-index: 99999 !important;
+        z-index: 100001 !important;
         box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
         cursor: pointer !important;
         pointer-events: auto !important;
@@ -2374,7 +2384,7 @@ body {
         top: 0;
         left: 0;
         right: 0;
-        z-index: 100;
+        z-index: 100000;
     }
 
     #content-section {
@@ -2459,6 +2469,7 @@ body {
     #map-legend {
         max-width: none;
         top: 60px;
+        padding: 15px;
     }
 
     .legend-grid {
@@ -2470,7 +2481,8 @@ body {
     }
 
     .legend-item {
-        min-height: 20px;
+        padding: 10px 12px;
+        min-height: 44px;
         box-sizing: border-box;
     }
 
@@ -2495,13 +2507,15 @@ body {
     #year-picker-dropdown {
         top: 55px;
         left: 10px;
-        padding: 12px;
+        right: 10px;
+        padding: 15px;
     }
 
     .year-picker-btn {
-        padding: 8px 12px;
-        font-size: 12px;
-        border-radius: 18px;
+        padding: 8px 20px;
+        font-size: 16px;
+        border-radius: 20px;
+        height: 35px;
     }
 
     .zoom-btn {
@@ -2527,7 +2541,7 @@ body {
         border-radius: 50% !important;
         padding: 0 !important;
         display: block !important;
-        z-index: 99999 !important;
+        z-index: 100001 !important;
         box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
         cursor: pointer !important;
         pointer-events: auto !important;
@@ -2733,7 +2747,7 @@ body {
         top: 0;
         left: 0;
         right: 0;
-        z-index: 100;
+        z-index: 100000;
     }
 
     #content-section {
