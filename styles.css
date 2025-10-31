@@ -2055,12 +2055,13 @@ body {
         background-size: contain;
         background-repeat: no-repeat;
         background-position: center;
-        transform: rotate(90deg);
+        transform: rotate(-90deg);
+        filter: brightness(0) invert(1);
         transition: transform 0.3s ease;
     }
 
     #year-display.open::after {
-        transform: rotate(-90deg);
+        transform: rotate(90deg);
     }
 
     /* Year picker dropdown for mobile */
@@ -2170,12 +2171,12 @@ body {
         background-size: contain;
         background-repeat: no-repeat;
         background-position: center;
-        transform: rotate(90deg);
+        transform: rotate(-90deg);
         transition: transform 0.3s ease;
     }
 
     #legend-toggle.open::after {
-        transform: rotate(-90deg);
+        transform: rotate(90deg);
     }
 
     #legend-toggle:active {
