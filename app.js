@@ -1017,6 +1017,12 @@ function goToEvent(index, withYearSwitch = false, initialDrop = false) {
     const event = events[index];
     const eventYear = event.parsedDate.getFullYear();
 
+    // Reset content scroll position on mobile
+    const contentSection = document.getElementById('content-section');
+    if (contentSection) {
+        contentSection.scrollTop = 0;
+    }
+
     // Switch year if needed
     if (eventYear !== currentYear) {
         switchToYear(eventYear, !withYearSwitch);
