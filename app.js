@@ -788,54 +788,80 @@ function getTimelinePosition(date) {
     return yearProgress * 100;
 }
 
+// Check if mobile view
+function isMobileView() {
+    return window.innerWidth <= 767;
+}
+
 // Create timeline markers for a specific year at a specific offset position
 function createTimelineMarkersForYear(container, year, offsetPercent, containerWidth) {
-    const minDistance = 8; // Minimum distance in pixels
-    const markerPositions = []; // Track adjusted positions
-
-    // Filter events for this year and calculate positions
+    // Filter events for this year
     const yearEvents = [];
     events.forEach((event, index) => {
         const eventYear = event.parsedDate.getFullYear();
         if (eventYear === year) {
-            const position = getTimelinePosition(event.parsedDate);
-            yearEvents.push({ event, index, position });
+            yearEvents.push({ event, index });
         }
     });
 
-    // Adjust positions to maintain minimum distance
-    yearEvents.forEach((item, i) => {
-        let adjustedPosition = item.position;
-        const pixelPosition = (adjustedPosition / 100) * containerWidth;
+    // On mobile, spread events evenly; on desktop, use date-based positioning
+    if (isMobileView()) {
+        // Mobile: Even spacing
+        yearEvents.forEach((item, i) => {
+            const evenPosition = (i / Math.max(1, yearEvents.length - 1)) * 100;
+            const position = yearEvents.length === 1 ? 50 : evenPosition;
 
-        // Check against previous markers
-        for (let j = 0; j < markerPositions.length; j++) {
-            const prevPixelPos = (markerPositions[j] / 100) * containerWidth;
-            if (Math.abs(pixelPosition - prevPixelPos) < minDistance) {
-                // Adjust position to maintain minimum distance
-                const newPixelPos = prevPixelPos + minDistance;
-                adjustedPosition = (newPixelPos / containerWidth) * 100;
+            const marker = document.createElement('div');
+            marker.className = 'timeline-marker';
+            marker.style.left = (offsetPercent + position) + '%';
+            marker.setAttribute('data-year', year);
+
+            if (item.index === currentEventIndex) {
+                marker.classList.add('active');
             }
-        }
 
-        markerPositions.push(adjustedPosition);
+            marker.addEventListener('click', () => {
+                goToEvent(item.index);
+            });
 
-        // Create marker
-        const marker = document.createElement('div');
-        marker.className = 'timeline-marker';
-        marker.style.left = (offsetPercent + adjustedPosition) + '%';
-        marker.setAttribute('data-year', year);
-
-        if (item.index === currentEventIndex) {
-            marker.classList.add('active');
-        }
-
-        marker.addEventListener('click', () => {
-            goToEvent(item.index);
+            container.appendChild(marker);
         });
+    } else {
+        // Desktop: Date-based positioning with collision detection
+        const minDistance = 8;
+        const markerPositions = [];
 
-        container.appendChild(marker);
-    });
+        yearEvents.forEach((item, i) => {
+            let adjustedPosition = getTimelinePosition(item.event.parsedDate);
+            const pixelPosition = (adjustedPosition / 100) * containerWidth;
+
+            // Check against previous markers
+            for (let j = 0; j < markerPositions.length; j++) {
+                const prevPixelPos = (markerPositions[j] / 100) * containerWidth;
+                if (Math.abs(pixelPosition - prevPixelPos) < minDistance) {
+                    const newPixelPos = prevPixelPos + minDistance;
+                    adjustedPosition = (newPixelPos / containerWidth) * 100;
+                }
+            }
+
+            markerPositions.push(adjustedPosition);
+
+            const marker = document.createElement('div');
+            marker.className = 'timeline-marker';
+            marker.style.left = (offsetPercent + adjustedPosition) + '%';
+            marker.setAttribute('data-year', year);
+
+            if (item.index === currentEventIndex) {
+                marker.classList.add('active');
+            }
+
+            marker.addEventListener('click', () => {
+                goToEvent(item.index);
+            });
+
+            container.appendChild(marker);
+        });
+    }
 }
 
 // Create timeline markers for previous, current, and next years
@@ -1074,21 +1100,20 @@ function getDateFromTimelinePosition(percent) {
     return new Date(yearStart.getTime() + (yearDuration * yearProgress));
 }
 
-// Timeline dragging functionality
+// Timeline dragging functionality with touch support
 function initTimelineDragging() {
     const handle = document.getElementById('timeline-handle');
     const timeline = document.getElementById('timeline');
     const tooltip = document.getElementById('timeline-tooltip');
     let animationFrameId = null;
 
-    handle.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        handle.classList.remove('animating');
-        tooltip.classList.remove('hidden');
-        e.preventDefault();
-    });
+    // Helper function to get client position from mouse or touch event
+    function getClientX(e) {
+        return e.touches ? e.touches[0].clientX : e.clientX;
+    }
 
-    document.addEventListener('mousemove', (e) => {
+    // Helper function to handle drag movement
+    function handleDragMove(clientX) {
         if (!isDragging) return;
 
         // Use requestAnimationFrame for smooth updates
@@ -1099,7 +1124,7 @@ function initTimelineDragging() {
         animationFrameId = requestAnimationFrame(() => {
             // Recalculate timeline rect on each move for accuracy
             const timelineRect = timeline.getBoundingClientRect();
-            const x = e.clientX - timelineRect.left;
+            const x = clientX - timelineRect.left;
             const percent = Math.max(0, Math.min(1, x / timelineRect.width)) * 100;
 
             const currentTime = getDateFromTimelinePosition(percent);
@@ -1136,9 +1161,10 @@ function initTimelineDragging() {
                 }
             });
         });
-    });
+    }
 
-    document.addEventListener('mouseup', () => {
+    // Helper function to handle drag end
+    function handleDragEnd() {
         if (!isDragging) return;
         isDragging = false;
         tooltip.classList.add('hidden');
@@ -1164,6 +1190,44 @@ function initTimelineDragging() {
         });
 
         goToEvent(nearestIndex);
+    }
+
+    // Mouse events
+    handle.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        handle.classList.remove('animating');
+        tooltip.classList.remove('hidden');
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        handleDragMove(e.clientX);
+    });
+
+    document.addEventListener('mouseup', () => {
+        handleDragEnd();
+    });
+
+    // Touch events
+    handle.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        handle.classList.remove('animating');
+        tooltip.classList.remove('hidden');
+        e.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('touchmove', (e) => {
+        if (isDragging && e.touches && e.touches.length > 0) {
+            handleDragMove(e.touches[0].clientX);
+        }
+    }, { passive: false });
+
+    document.addEventListener('touchend', () => {
+        handleDragEnd();
+    });
+
+    document.addEventListener('touchcancel', () => {
+        handleDragEnd();
     });
 }
 
@@ -1284,6 +1348,83 @@ map.on('styleimagemissing', (e) => {
     map.addImage(e.id, { width, height, data });
 });
 
+// Mobile legend toggle functionality
+function initMobileLegendToggle() {
+    const toggleBtn = document.getElementById('legend-toggle');
+    const legend = document.getElementById('map-legend');
+
+    // Check if we're on mobile
+    function isMobile() {
+        return window.innerWidth <= 767;
+    }
+
+    // Update legend visibility based on screen size
+    function updateLegendDisplay() {
+        if (isMobile()) {
+            toggleBtn.style.display = 'block';
+            legend.classList.add('collapsed');
+        } else {
+            toggleBtn.style.display = 'none';
+            legend.classList.remove('collapsed');
+        }
+    }
+
+    // Toggle legend on button click
+    toggleBtn.addEventListener('click', () => {
+        legend.classList.toggle('collapsed');
+    });
+
+    // Close legend when clicking outside
+    document.addEventListener('click', (e) => {
+        if (isMobile() &&
+            !legend.contains(e.target) &&
+            !toggleBtn.contains(e.target) &&
+            !legend.classList.contains('collapsed')) {
+            legend.classList.add('collapsed');
+        }
+    });
+
+    // Update on window resize
+    window.addEventListener('resize', updateLegendDisplay);
+
+    // Initial setup
+    updateLegendDisplay();
+}
+
+// Re-render timeline markers on window resize (mobile vs desktop)
+window.addEventListener('resize', () => {
+    createTimelineMarkers();
+});
+
+// Mobile hamburger menu setup
+function initMobileHamburgerMenu() {
+    const hamburgerMenu = document.getElementById('content-top-controls');
+
+    if (!hamburgerMenu) return;
+
+    // Check if we're on mobile
+    function isMobile() {
+        return window.innerWidth <= 767;
+    }
+
+    // Update hamburger menu visibility based on screen size
+    function updateHamburgerDisplay() {
+        const mobile = isMobile();
+
+        if (mobile) {
+            hamburgerMenu.classList.add('mobile-menu', 'show');
+        } else {
+            hamburgerMenu.classList.remove('mobile-menu', 'show');
+        }
+    }
+
+    // Update on window resize
+    window.addEventListener('resize', updateHamburgerDisplay);
+
+    // Initial setup
+    updateHamburgerDisplay();
+}
+
 // Initialize when map is loaded
 map.on('load', async () => {
     // Load translations first
@@ -1310,6 +1451,7 @@ map.on('load', async () => {
     createTimelineMarkers();
     initTimelineDragging();
     initIdleDetection();
+    initMobileLegendToggle(); // Initialize mobile legend toggle
 
     // Hide handle initially, then drop it in
     const handle = document.getElementById('timeline-handle');
@@ -1321,6 +1463,11 @@ map.on('load', async () => {
     setTimeout(() => {
         const loadingScreen = document.getElementById('loading-screen');
         loadingScreen.classList.add('fade-out');
+
+        // Show mobile hamburger menu after loading completes
+        setTimeout(() => {
+            initMobileHamburgerMenu();
+        }, 300); // Wait for loading screen fade animation
     }, 500);
 });
 
@@ -1352,6 +1499,15 @@ function updateUITexts() {
     const helpBtnSpan = document.querySelector('#help-btn span');
     if (helpBtnSpan) {
         helpBtnSpan.textContent = t('ui.buttons.information');
+    }
+
+    // Update legend toggle button text
+    const legendToggleSpan = document.querySelector('#legend-toggle span');
+    if (legendToggleSpan) {
+        const text = currentLanguage === 'sv' ? legendToggleSpan.getAttribute('data-sv') : legendToggleSpan.getAttribute('data-en');
+        if (text) {
+            legendToggleSpan.textContent = text;
+        }
     }
 
     // Update info overlay content

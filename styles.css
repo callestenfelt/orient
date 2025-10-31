@@ -209,6 +209,11 @@ body {
     transition: color 0.2s ease;
 }
 
+/* Hide legend toggle on desktop by default */
+#legend-toggle {
+    display: none;
+}
+
 #zoom-controls {
     position: absolute;
     top: 20px;
@@ -776,6 +781,7 @@ body {
     -moz-user-select: none;
     -ms-user-select: none;
     touch-action: none;
+    -webkit-tap-highlight-color: transparent;
     transition: filter 0.3s ease;
 }
 
@@ -1558,6 +1564,41 @@ body {
     pointer-events: all;
 }
 
+/* Hide ::before by default (will be shown on mobile) */
+#content-top-controls::before {
+    content: none;
+    display: none;
+}
+
+/* Initially hidden during loading */
+#content-top-controls.mobile-menu {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* Show after loading */
+#content-top-controls.mobile-menu.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Show children buttons on desktop */
+@media (min-width: 768px) {
+    #content-top-controls::before {
+        content: none !important;
+        display: none !important;
+    }
+
+    #content-top-controls {
+        width: auto !important;
+        height: auto !important;
+        background: transparent !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+    }
+}
+
 .content-control-btn {
     background: transparent;
     border: none;
@@ -1833,4 +1874,797 @@ body {
     text-align: left;
     padding: 10px;
     background: var(--color-white);
+}
+
+/* ============================================
+   RESPONSIVE BREAKPOINTS - MOBILE ADAPTATION
+   ============================================ */
+
+/* Tablet - Large (768px - 1023px) */
+@media (max-width: 1023px) {
+    #app-container {
+        height: calc(100vh - 80px);
+    }
+
+    #timeline-container {
+        height: 80px;
+    }
+
+    #event-content {
+        padding: 60px 30px 30px 30px;
+    }
+
+    #event-title {
+        font-size: 48px;
+        margin-bottom: 25px;
+    }
+
+    #event-text {
+        width: 300px;
+    }
+
+    #event-image-wrapper {
+        width: 300px;
+    }
+
+    /* Compress legend grid */
+    .legend-grid {
+        grid-template-columns: repeat(2, auto);
+        grid-template-rows: repeat(4, auto);
+        gap: 6px 10px;
+    }
+
+    /* Info overlay adjustments */
+    #info-content {
+        padding: 50px 60px;
+        max-width: 90%;
+    }
+
+    #info-title {
+        font-size: 42px;
+        margin-bottom: 40px;
+    }
+}
+
+/* Mobile Landscape & Tablet Portrait (481px - 767px) */
+@media (max-width: 767px) {
+    /* Stack layout vertically */
+    #app-container {
+        flex-direction: column;
+        height: 100vh;
+    }
+
+    #map-section {
+        width: 100%;
+        height: 40vh;
+        min-height: 300px;
+        position: relative;
+    }
+
+    #content-section {
+        width: 100%;
+        height: auto;
+        flex: 1;
+    }
+
+    #content-background {
+        top: calc(40vh + 70px);
+        left: 0;
+        bottom: 0;
+    }
+
+    /* Timeline positioned between map and content */
+    #timeline-container {
+        position: absolute;
+        bottom: auto;
+        top: 40vh;
+        left: 0;
+        right: 0;
+        height: 70px;
+        background: transparent;
+        box-shadow: none;
+        z-index: 500;
+    }
+
+    /* Simplified timeline for mobile */
+    #timeline {
+        height: 70px;
+        margin: 0 80px;
+        background: var(--color-white);
+        border-radius: 35px;
+        padding: 0 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    }
+
+    /* Hide timeline elements on mobile */
+    #timeline-white-bg,
+    #timeline-year-pills,
+    #timeline-month-labels,
+    #timeline-handle,
+    #timeline-overlay-left,
+    #timeline-overlay-right {
+        display: none !important;
+    }
+
+    #timeline-track {
+        left: 0;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    #timeline-markers {
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .timeline-nav-btn {
+        width: 60px;
+        height: 60px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    #prev-btn {
+        left: 10px;
+    }
+
+    #next-btn {
+        right: 10px;
+    }
+
+    /* Map controls */
+    #top-left-controls {
+        top: 15px;
+        left: 15px;
+        gap: 15px;
+        flex-wrap: wrap;
+        max-width: calc(100% - 90px);
+    }
+
+    /* Year display as dropdown button */
+    #year-display {
+        font-size: 20px;
+        padding: 10px 18px;
+        border-radius: 20px;
+        cursor: pointer;
+        position: relative;
+    }
+
+    #year-display::after {
+        content: '▼';
+        margin-left: 8px;
+        font-size: 14px;
+    }
+
+    /* Make legend collapsible on mobile */
+    #map-legend {
+        position: fixed;
+        top: 70px;
+        left: 15px;
+        right: 15px;
+        width: auto;
+        max-width: none;
+        max-height: 60vh;
+        overflow-y: auto;
+        z-index: 100;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        border-radius: 12px;
+    }
+
+    #map-legend.collapsed {
+        display: none;
+    }
+
+    .legend-grid {
+        grid-template-columns: repeat(2, auto);
+        gap: 6px 8px;
+    }
+
+    .legend-item {
+        padding: 5px 8px;
+    }
+
+    .legend-label {
+        font-size: 11px;
+    }
+
+    /* Legend toggle button as pill */
+    #legend-toggle {
+        display: block;
+        background: rgba(255, 255, 255, 0.95);
+        border: none;
+        padding: 10px 18px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--color-black);
+        cursor: pointer;
+        box-shadow: 0 0 40px -10px rgba(0,0,0,0.3),
+                    0 0 25px -15px rgba(0,0,0,0.2);
+        position: relative;
+    }
+
+    #legend-toggle::after {
+        content: '▼';
+        margin-left: 6px;
+        font-size: 11px;
+    }
+
+    #legend-toggle:active {
+        background: rgba(255, 255, 255, 1);
+    }
+
+    /* Hide top controls, show hamburger menu */
+    html body #content-top-controls.mobile-menu {
+        position: fixed !important;
+        top: 15px !important;
+        right: 15px !important;
+        width: 50px !important;
+        height: 50px !important;
+        min-width: 50px !important;
+        min-height: 50px !important;
+        background: var(--color-primary) !important;
+        border-radius: 50% !important;
+        padding: 0 !important;
+        display: block !important;
+        z-index: 99999 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+        cursor: pointer !important;
+        pointer-events: auto !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        transition: opacity 0.3s ease, visibility 0.3s ease !important;
+    }
+
+    html body #content-top-controls.mobile-menu.show {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html body #content-top-controls.mobile-menu::before {
+        content: '≡' !important;
+        font-size: 28px !important;
+        color: var(--color-dark-blue) !important;
+        font-weight: 900 !important;
+        line-height: 50px !important;
+        display: block !important;
+        text-align: center !important;
+        width: 50px !important;
+        height: 50px !important;
+        font-family: Arial, sans-serif !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        pointer-events: none !important;
+    }
+
+    html body #content-top-controls.mobile-menu #help-btn,
+    html body #content-top-controls.mobile-menu #language-btn {
+        display: none !important;
+        visibility: hidden !important;
+        position: absolute !important;
+        left: -9999px !important;
+    }
+
+    html body #content-top-controls.mobile-menu:active {
+        transform: scale(0.95);
+    }
+
+    #zoom-controls {
+        top: 80px;
+        right: 15px;
+        z-index: 999;
+    }
+
+    /* Content section - add more top padding to avoid timeline overlap */
+    #event-content {
+        padding: 80px 25px 25px 25px;
+    }
+
+    #event-date-label {
+        font-size: 18px;
+    }
+
+    #event-title {
+        font-size: 36px;
+        margin-bottom: 20px;
+    }
+
+    #event-body {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    #event-text {
+        width: 100%;
+        font-size: 15px;
+    }
+
+    #event-image-wrapper {
+        width: 100%;
+        max-width: 500px;
+    }
+
+    /* Top controls - desktop only, not for mobile-menu */
+    #content-top-controls:not(.mobile-menu) {
+        top: 15px;
+        right: 15px;
+        gap: 15px;
+    }
+
+    #help-btn img,
+    #language-btn img {
+        width: 36px;
+        height: 36px;
+    }
+
+    #help-btn span,
+    #language-btn span {
+        font-size: 11px;
+    }
+
+    /* Info overlay */
+    #info-overlay {
+        padding: 40px 20px 80px 20px;
+    }
+
+    #info-content {
+        padding: 40px 30px;
+        max-width: 95%;
+        height: auto;
+        max-height: 95%;
+    }
+
+    #info-title {
+        font-size: 36px;
+        margin-bottom: 30px;
+    }
+
+    #info-columns {
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .info-column h2 {
+        font-size: 16px;
+    }
+
+    .info-column p {
+        font-size: 16px;
+    }
+
+    #close-info-btn-main {
+        top: 15px;
+        right: 20px;
+        width: 44px;
+        height: 44px;
+        font-size: 42px;
+    }
+
+    #image-sources-title {
+        font-size: 48px;
+    }
+
+    #image-sources-columns {
+        grid-template-columns: 1fr;
+    }
+
+    /* Image overlay */
+    #image-overlay-content {
+        max-width: 90vw;
+        max-height: 85vh;
+    }
+
+    #close-image-btn {
+        top: calc(7.5vh - 20px);
+        right: calc(5vw - 20px);
+        width: 54px;
+        height: 54px;
+        font-size: 32px;
+    }
+}
+
+/* Mobile Portrait (320px - 480px) */
+@media (max-width: 480px) {
+    /* Reduce map height on portrait */
+    #app-container {
+        height: 100vh;
+    }
+
+    #map-section {
+        height: 35vh;
+        min-height: 250px;
+        position: relative;
+    }
+
+    #content-background {
+        top: calc(35vh + 60px);
+        bottom: 0;
+    }
+
+    /* Timeline positioned between map and content */
+    #timeline-container {
+        position: absolute;
+        bottom: auto;
+        top: 35vh;
+        height: 60px;
+        padding: 0;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    #timeline {
+        height: 60px;
+        margin: 0 70px;
+        border-radius: 30px;
+        padding: 0 15px;
+    }
+
+    .timeline-nav-btn {
+        width: 50px;
+        height: 50px;
+    }
+
+    .timeline-nav-btn img {
+        width: 12px;
+        height: 20px;
+    }
+
+    #prev-btn {
+        left: 10px;
+    }
+
+    #next-btn {
+        right: 10px;
+    }
+
+    /* Map controls */
+    #top-left-controls {
+        top: 10px;
+        left: 10px;
+        gap: 10px;
+    }
+
+    #year-display {
+        font-size: 18px;
+        padding: 9px 16px;
+        border-radius: 18px;
+    }
+
+    #year-display::after {
+        font-size: 12px;
+    }
+
+    #map-legend {
+        max-width: none;
+        top: 60px;
+    }
+
+    .legend-grid {
+        grid-template-columns: 1fr;
+        gap: 5px;
+    }
+
+    .legend-label {
+        font-size: 10px;
+    }
+
+    #legend-toggle {
+        font-size: 12px;
+        padding: 9px 16px;
+        border-radius: 18px;
+    }
+
+    #legend-toggle::after {
+        font-size: 10px;
+    }
+
+    .zoom-btn {
+        width: 44px;
+        height: 44px;
+    }
+
+    #zoom-controls {
+        top: 70px;
+        right: 10px;
+    }
+
+    /* Hamburger menu for portrait - full styles needed */
+    html body #content-top-controls.mobile-menu {
+        position: fixed !important;
+        top: 10px !important;
+        right: 10px !important;
+        width: 50px !important;
+        height: 50px !important;
+        min-width: 50px !important;
+        min-height: 50px !important;
+        background: var(--color-primary) !important;
+        border-radius: 50% !important;
+        padding: 0 !important;
+        display: block !important;
+        z-index: 99999 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+        cursor: pointer !important;
+        pointer-events: auto !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        transition: opacity 0.3s ease, visibility 0.3s ease !important;
+    }
+
+    html body #content-top-controls.mobile-menu.show {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html body #content-top-controls.mobile-menu::before {
+        content: '≡' !important;
+        font-size: 26px !important;
+        color: var(--color-dark-blue) !important;
+        font-weight: 900 !important;
+        line-height: 50px !important;
+        display: block !important;
+        text-align: center !important;
+        width: 50px !important;
+        height: 50px !important;
+        font-family: Arial, sans-serif !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        pointer-events: none !important;
+    }
+
+    html body #content-top-controls.mobile-menu #help-btn,
+    html body #content-top-controls.mobile-menu #language-btn {
+        display: none !important;
+        visibility: hidden !important;
+        position: absolute !important;
+        left: -9999px !important;
+    }
+
+    /* Content section - add more top padding to avoid timeline overlap */
+    #event-content {
+        padding: 70px 15px 20px 15px;
+    }
+
+    #event-date-label {
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+
+    #event-title {
+        font-size: 28px;
+        margin-bottom: 18px;
+        line-height: 1.2;
+    }
+
+    #event-body {
+        gap: 15px;
+    }
+
+    #event-text {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    /* Top controls - desktop only, not for mobile-menu */
+    #content-top-controls:not(.mobile-menu) {
+        top: 10px;
+        right: 10px;
+        gap: 12px;
+    }
+
+    .control-btn {
+        width: 44px;
+        height: 44px;
+    }
+
+    .control-btn img {
+        width: 20px;
+        height: 20px;
+    }
+
+    #help-btn img,
+    #language-btn img {
+        width: 32px;
+        height: 32px;
+    }
+
+    #help-btn span,
+    #language-btn span {
+        font-size: 10px;
+    }
+
+    /* Info overlay */
+    #info-overlay {
+        padding: 20px 10px 70px 10px;
+    }
+
+    #info-content {
+        padding: 30px 20px;
+        max-width: 98%;
+    }
+
+    #info-title {
+        font-size: 28px;
+        margin-bottom: 20px;
+    }
+
+    #info-columns {
+        gap: 25px;
+    }
+
+    .info-column h2 {
+        font-size: 15px;
+        margin-bottom: 15px;
+    }
+
+    .info-column p {
+        font-size: 14px;
+        margin-bottom: 12px;
+    }
+
+    .info-features li {
+        font-size: 13px;
+        padding: 8px 15px;
+        margin-bottom: 12px;
+    }
+
+    .info-features li .feature-icon {
+        width: 80px;
+        height: 50px;
+    }
+
+    .info-features li .feature-icon img {
+        max-width: 50px;
+        max-height: 50px;
+    }
+
+    .big-yellow-btn {
+        font-size: 16px;
+        height: 70px;
+    }
+
+    #close-info-btn-main,
+    #close-info-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 36px;
+    }
+
+    #close-info-btn-main {
+        top: 12px;
+        right: 15px;
+    }
+
+    #back-to-info-btn {
+        font-size: 12px;
+        margin-right: 20px;
+    }
+
+    #image-sources-title {
+        font-size: 36px;
+    }
+
+    #image-sources-columns {
+        font-size: 10px;
+    }
+
+    /* Image overlay */
+    #image-overlay-content {
+        max-width: 95vw;
+        max-height: 90vh;
+        padding: 8px;
+        padding-bottom: 30px;
+    }
+
+    #overlay-image {
+        max-height: calc(90vh - 80px);
+    }
+
+    #overlay-image-caption {
+        font-size: 12px;
+        padding: 8px;
+    }
+
+    #close-image-btn {
+        top: calc(5vh - 15px);
+        right: calc(2.5vw - 15px);
+        width: 48px;
+        height: 48px;
+        font-size: 28px;
+    }
+}
+
+/* Landscape orientation - special handling for very short screens */
+@media (max-width: 767px) and (orientation: landscape) and (max-height: 500px) {
+    #app-container {
+        height: 100vh;
+    }
+
+    #map-section {
+        height: 50vh;
+        position: relative;
+    }
+
+    #content-background {
+        top: calc(50vh + 55px);
+        bottom: 0;
+    }
+
+    #timeline-container {
+        position: absolute;
+        bottom: auto;
+        top: 50vh;
+        height: 55px;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    #timeline {
+        height: 55px;
+        border-radius: 27.5px;
+    }
+
+    #event-content {
+        padding: 20px 15px 15px 15px;
+    }
+
+    #event-title {
+        font-size: 24px;
+        margin-bottom: 12px;
+    }
+
+    #event-date-label {
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+}
+
+/* ============================================
+   TOUCH OPTIMIZATION
+   ============================================ */
+
+/* Disable tap highlight on all interactive elements */
+button,
+a,
+.timeline-marker,
+.timeline-year-pill,
+.legend-item,
+.event-marker {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
+/* Improve touch feedback with active states */
+@media (hover: none) and (pointer: coarse) {
+    /* Touch device specific styles */
+
+    button:active,
+    .timeline-nav-btn:active,
+    .zoom-btn:active,
+    .control-btn:active {
+        opacity: 0.8;
+        transform: scale(0.95);
+    }
+
+    .timeline-year-pill:active {
+        opacity: 0.9;
+    }
+
+    .legend-item:active {
+        background: #f0f0f0;
+    }
+
+    /* Ensure map controls don't interfere with touch */
+    #map {
+        touch-action: pan-x pan-y;
+    }
+
+    /* Make scrollable areas smoother on touch */
+    #content-section,
+    #info-content,
+    #timeline-year-pills {
+        -webkit-overflow-scrolling: touch;
+    }
 }

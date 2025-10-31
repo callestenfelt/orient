@@ -3,7 +3,7 @@
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>Orient - WW2 Timeline</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🗺️</text></svg>">
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
@@ -29,6 +29,11 @@
                 <div id="top-left-controls">
                     <!-- Year Display -->
                     <div id="year-display">1946</div>
+
+                    <!-- Legend Toggle Button (Mobile) -->
+                    <button id="legend-toggle">
+                        <span data-sv="Områdesförklaring" data-en="Map Legend">Områdesförklaring</span>
+                    </button>
 
                     <!-- Legend -->
                     <div id="map-legend">
