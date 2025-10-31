@@ -1961,7 +1961,7 @@ body {
         left: 0;
         right: 0;
         height: 70px;
-        background: transparent;
+        background: var(--color-white);
         box-shadow: none;
         z-index: 500;
     }
@@ -1970,10 +1970,10 @@ body {
     #timeline {
         height: 70px;
         margin: 0 80px;
-        background: var(--color-white);
-        border-radius: 35px;
+        background: transparent;
+        border-radius: 0;
         padding: 0 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        box-shadow: none;
     }
 
     /* Hide timeline elements on mobile */
@@ -2290,15 +2290,16 @@ body {
         top: 35vh;
         height: 60px;
         padding: 0;
-        background: transparent;
+        background: var(--color-white);
         box-shadow: none;
     }
 
     #timeline {
         height: 60px;
         margin: 0 70px;
-        border-radius: 30px;
+        border-radius: 0;
         padding: 0 15px;
+        background: transparent;
     }
 
     .timeline-nav-btn {
@@ -2597,13 +2598,14 @@ body {
         bottom: auto;
         top: 50vh;
         height: 55px;
-        background: transparent;
+        background: var(--color-white);
         box-shadow: none;
     }
 
     #timeline {
         height: 55px;
-        border-radius: 27.5px;
+        border-radius: 0;
+        background: transparent;
     }
 
     #event-content {
