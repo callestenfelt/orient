@@ -679,10 +679,10 @@ body {
 
 #timeline-markers {
     position: absolute;
-    top: 15px;
+    top: 16px;
     left: 0;
     right: 0;
-    height: 10px;
+    height: 0px;
     z-index: 2;
     overflow: visible;
 }
@@ -694,7 +694,7 @@ body {
     background: var(--color-dark-blue);
     border-radius: 50%;
     transform: translate(-50%, -50%);
-    top: 1px;
+    top: 0;
     cursor: pointer;
     transition: all 0.2s;
     border: 0px solid var(--color-dark-blue);
@@ -1777,18 +1777,16 @@ body {
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0);
-    z-index: 3000;
+    z-index: 200000;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: background 0.3s ease;
+    padding: 40px;
 }
 
 #image-overlay:not(.hidden) {
     background: rgba(0, 0, 0, 0.8);
-}
-    padding: 40px;
-    padding-bottom: 140px;
 }
 
 #image-overlay-wrapper {
@@ -1796,12 +1794,14 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    max-width: 100%;
+    max-height: 100%;
 }
 
 #close-image-btn {
-    position: fixed;
-    top: calc(10vh - 20px);
-    right: calc(10vw - 20px);
+    position: absolute;
+    top: 10px;
+    right: 10px;
     width: 60px;
     height: 60px;
     background: var(--color-primary);
@@ -1949,21 +1949,24 @@ body {
 
     #content-section {
         width: 100%;
-        height: calc(100vh - 40vh - 70px);
+        height: calc(100vh - 40vh);
         position: fixed;
-        top: calc(40vh + 70px);
+        top: 40vh;
         left: 0;
         right: 0;
         overflow-y: auto;
         overflow-x: hidden;
+        padding-top: 70px;
+        box-sizing: border-box;
     }
 
     #content-background {
-        position: absolute;
-        top: 0;
+        position: fixed;
+        top: 40vh;
         left: 0;
         right: 0;
         bottom: 0;
+        z-index: 0;
     }
 
     /* Timeline positioned between map and content - sticky */
@@ -2263,7 +2266,7 @@ body {
 
     /* Content section - add more top padding to avoid timeline overlap */
     #event-content {
-        padding: 80px 25px 25px 25px;
+        padding: 80px 25px 125px 25px;
         min-height: 100%;
     }
 
@@ -2356,14 +2359,18 @@ body {
     }
 
     /* Image overlay */
+    #image-overlay {
+        padding: 20px;
+    }
+
     #image-overlay-content {
         max-width: 90vw;
         max-height: 85vh;
     }
 
     #close-image-btn {
-        top: calc(7.5vh - 20px);
-        right: calc(5vw - 20px);
+        top: 10px;
+        right: 10px;
         width: 54px;
         height: 54px;
         font-size: 32px;
@@ -2389,21 +2396,24 @@ body {
     }
 
     #content-section {
-        height: calc(100vh - 35vh - 60px);
+        height: calc(100vh - 35vh);
         position: fixed;
-        top: calc(35vh + 60px);
+        top: 35vh;
         left: 0;
         right: 0;
         overflow-y: auto;
         overflow-x: hidden;
+        padding-top: 60px;
+        box-sizing: border-box;
     }
 
     #content-background {
-        position: absolute;
-        top: 0;
+        position: fixed;
+        top: 35vh;
         left: 0;
         right: 0;
         bottom: 0;
+        z-index: 0;
     }
 
     /* Timeline positioned between map and content - sticky */
@@ -2583,7 +2593,7 @@ body {
 
     /* Content section - add more top padding to avoid timeline overlap */
     #event-content {
-        padding: 70px 15px 20px 15px;
+        padding: 70px 15px 120px 15px;
         min-height: 100%;
     }
 
@@ -2711,6 +2721,10 @@ body {
     }
 
     /* Image overlay */
+    #image-overlay {
+        padding: 15px;
+    }
+
     #image-overlay-content {
         max-width: 95vw;
         max-height: 90vh;
@@ -2728,8 +2742,8 @@ body {
     }
 
     #close-image-btn {
-        top: calc(5vh - 15px);
-        right: calc(2.5vw - 15px);
+        top: 10px;
+        right: 10px;
         width: 48px;
         height: 48px;
         font-size: 28px;
@@ -2753,21 +2767,24 @@ body {
     }
 
     #content-section {
-        height: calc(100vh - 50vh - 55px);
+        height: calc(100vh - 50vh);
         position: fixed;
-        top: calc(50vh + 55px);
+        top: 50vh;
         left: 0;
         right: 0;
         overflow-y: auto;
         overflow-x: hidden;
+        padding-top: 55px;
+        box-sizing: border-box;
     }
 
     #content-background {
-        position: absolute;
-        top: 0;
+        position: fixed;
+        top: 50vh;
         left: 0;
         right: 0;
         bottom: 0;
+        z-index: 0;
     }
 
     #timeline-container {
@@ -2788,7 +2805,7 @@ body {
     }
 
     #event-content {
-        padding: 20px 15px 15px 15px;
+        padding: 20px 15px 115px 15px;
         min-height: 100%;
     }
 
@@ -2860,5 +2877,130 @@ a,
     #info-content,
     #timeline-year-pills {
         -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Mobile Menu Overlay */
+#mobile-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--color-dark-blue);
+    z-index: 300000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+#mobile-menu-content {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 40px;
+}
+
+#close-mobile-menu-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 50px;
+    height: 50px;
+    background: transparent;
+    border: none;
+    font-size: 48px;
+    line-height: 1;
+    color: var(--color-white);
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+}
+
+#close-mobile-menu-btn:hover {
+    transform: rotate(180deg);
+}
+
+#mobile-menu-title {
+    font-size: 60px;
+    font-weight: 800;
+    color: var(--color-white);
+    margin-bottom: 60px;
+    text-align: center;
+}
+
+.mobile-menu-items {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.mobile-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 25px 30px;
+    color: var(--color-white);
+    font-size: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.mobile-menu-item:hover,
+.mobile-menu-item:active {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: var(--color-primary);
+}
+
+.mobile-menu-item img {
+    width: 40px;
+    height: 40px;
+    filter: brightness(0) invert(1);
+}
+
+/* Mobile portrait adjustments */
+@media (max-width: 480px) {
+    #mobile-menu-content {
+        padding: 40px 20px;
+    }
+
+    #close-mobile-menu-btn {
+        top: 10px;
+        right: 10px;
+        width: 44px;
+        height: 44px;
+        font-size: 42px;
+    }
+
+    #mobile-menu-title {
+        font-size: 48px;
+        margin-bottom: 40px;
+    }
+
+    .mobile-menu-item {
+        padding: 20px 25px;
+        font-size: 18px;
+    }
+
+    .mobile-menu-item img {
+        width: 36px;
+        height: 36px;
     }
 }
