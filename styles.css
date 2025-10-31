@@ -2950,7 +2950,8 @@ a,
     .info-language-toggle img {
         width: 24px;
         height: 24px;
-        filter: brightness(0) saturate(100%) invert(14%) sepia(85%) saturate(1817%) hue-rotate(194deg) brightness(91%) contrast(101%);
+        /* Convert to dark blue to match text */
+        filter: brightness(0) saturate(100%) invert(19%) sepia(97%) saturate(1158%) hue-rotate(173deg) brightness(93%) contrast(101%);
         display: block;
     }
 
@@ -2960,13 +2961,25 @@ a,
         color: var(--color-dark-blue);
         line-height: 1;
         display: inline-block;
-        border-bottom: 1px solid var(--color-dark-blue);
-        transition: border-bottom-color 0.2s ease;
+        position: relative;
     }
 
-    .info-language-toggle:hover span,
-    .info-language-toggle:active span {
-        border-bottom-color: transparent;
+    .info-language-toggle span::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--color-dark-blue);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+    }
+
+    .info-language-toggle:hover span::after,
+    .info-language-toggle:active span::after {
+        transform: scaleX(1);
     }
 }
 
