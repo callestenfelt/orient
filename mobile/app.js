@@ -668,7 +668,7 @@ function createEventMarkers() {
 }
 
 // Update event content panel
-function updateEventContent(event, preventScroll = false, scrollY = 0) {
+function updateEventContent(event) {
     const contentEl = document.getElementById('event-content');
     const bgEl = document.getElementById('content-background');
 
@@ -692,13 +692,6 @@ function updateEventContent(event, preventScroll = false, scrollY = 0) {
 
         // Fade in
         contentEl.classList.remove('fade-out');
-
-        // Restore scroll position on mobile after content updates
-        if (preventScroll) {
-            requestAnimationFrame(() => {
-                window.scrollTo(0, scrollY);
-            });
-        }
     }, 300);
 }
 
@@ -1024,9 +1017,11 @@ function goToEvent(index, withYearSwitch = false, initialDrop = false) {
     const event = events[index];
     const eventYear = event.parsedDate.getFullYear();
 
-    // On mobile, prevent auto-scroll during content update
-    const scrollY = window.scrollY || window.pageYOffset;
-    const preventScroll = window.innerWidth <= 767;
+    // Reset content scroll position on mobile
+    const contentSection = document.getElementById('content-section');
+    if (contentSection) {
+        contentSection.scrollTop = 0;
+    }
 
     // Switch year if needed
     if (eventYear !== currentYear) {
@@ -1036,7 +1031,7 @@ function goToEvent(index, withYearSwitch = false, initialDrop = false) {
         createTimelineMarkers();
     }
 
-    updateEventContent(event, preventScroll, scrollY);
+    updateEventContent(event);
     updateBorders(event.parsedDate);
     createEventMarkers();
     createTimelineYearLabels();
@@ -1372,17 +1367,28 @@ function initMobileLegendToggle() {
     // Update legend visibility based on screen size
     function updateLegendDisplay() {
         if (isMobile()) {
-            toggleBtn.style.display = 'block';
+            toggleBtn.style.display = 'inline-flex';
             legend.classList.add('collapsed');
+            toggleBtn.classList.remove('open');
         } else {
             toggleBtn.style.display = 'none';
             legend.classList.remove('collapsed');
+            toggleBtn.classList.remove('open');
         }
     }
 
     // Toggle legend on button click
     toggleBtn.addEventListener('click', () => {
+        // Close year picker dropdown if open
+        const yearDropdown = document.getElementById('year-picker-dropdown');
+        const yearDisplay = document.getElementById('year-display');
+        if (yearDropdown && yearDisplay && !yearDropdown.classList.contains('collapsed')) {
+            yearDropdown.classList.add('collapsed');
+            yearDisplay.classList.remove('open');
+        }
+
         legend.classList.toggle('collapsed');
+        toggleBtn.classList.toggle('open');
     });
 
     // Close legend when clicking outside
@@ -1392,6 +1398,7 @@ function initMobileLegendToggle() {
             !toggleBtn.contains(e.target) &&
             !legend.classList.contains('collapsed')) {
             legend.classList.add('collapsed');
+            toggleBtn.classList.remove('open');
         }
     });
 
@@ -1400,6 +1407,99 @@ function initMobileLegendToggle() {
 
     // Initial setup
     updateLegendDisplay();
+}
+
+// Mobile year picker dropdown functionality
+function initMobileYearPicker() {
+    const yearDisplay = document.getElementById('year-display');
+    const yearDropdown = document.getElementById('year-picker-dropdown');
+
+    // Check if we're on mobile
+    function isMobile() {
+        return window.innerWidth <= 767;
+    }
+
+    // Populate year picker with years 1933-1948
+    function populateYearPicker() {
+        yearDropdown.innerHTML = '';
+        for (let year = 1933; year <= 1948; year++) {
+            const btn = document.createElement('button');
+            btn.className = 'year-picker-btn';
+            btn.textContent = year;
+            btn.setAttribute('data-year', year);
+
+            if (year === currentYear) {
+                btn.classList.add('active');
+            }
+
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Find first event for this year
+                const firstEventIndex = events.findIndex(event =>
+                    event.parsedDate.getFullYear() === year
+                );
+
+                if (firstEventIndex !== -1) {
+                    switchToYear(year, false, false, firstEventIndex);
+                } else {
+                    switchToYear(year, false, true);
+                }
+
+                // Close dropdown
+                yearDropdown.classList.add('collapsed');
+                yearDisplay.classList.remove('open');
+            });
+
+            yearDropdown.appendChild(btn);
+        }
+    }
+
+    // Toggle year picker on button click
+    yearDisplay.addEventListener('click', (e) => {
+        if (isMobile()) {
+            e.stopPropagation();
+
+            // Close legend dropdown if open
+            const legend = document.getElementById('map-legend');
+            const legendToggle = document.getElementById('legend-toggle');
+            if (legend && legendToggle && !legend.classList.contains('collapsed')) {
+                legend.classList.add('collapsed');
+                legendToggle.classList.remove('open');
+            }
+
+            yearDropdown.classList.toggle('collapsed');
+            yearDisplay.classList.toggle('open');
+
+            // Update active year button
+            const buttons = yearDropdown.querySelectorAll('.year-picker-btn');
+            buttons.forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.getAttribute('data-year')) === currentYear);
+            });
+        }
+    });
+
+    // Close year picker when clicking outside
+    document.addEventListener('click', (e) => {
+        if (isMobile() &&
+            !yearDropdown.contains(e.target) &&
+            !yearDisplay.contains(e.target) &&
+            !yearDropdown.classList.contains('collapsed')) {
+            yearDropdown.classList.add('collapsed');
+            yearDisplay.classList.remove('open');
+        }
+    });
+
+    // Initial setup
+    if (isMobile()) {
+        populateYearPicker();
+    }
+
+    // Update on window resize
+    window.addEventListener('resize', () => {
+        if (isMobile()) {
+            populateYearPicker();
+        }
+    });
 }
 
 // Re-render timeline markers on window resize (mobile vs desktop)
@@ -1463,6 +1563,7 @@ map.on('load', async () => {
     initTimelineDragging();
     initIdleDetection();
     initMobileLegendToggle(); // Initialize mobile legend toggle
+    initMobileYearPicker(); // Initialize mobile year picker
 
     // Hide handle initially, then drop it in
     const handle = document.getElementById('timeline-handle');
