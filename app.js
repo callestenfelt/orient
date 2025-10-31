@@ -1685,7 +1685,7 @@ async function switchLanguage() {
     // Update info overlay language button text (mobile)
     const infoLanguageText = document.getElementById('info-language-text');
     if (infoLanguageText) {
-        infoLanguageText.textContent = t('ui.buttons.language');
+        infoLanguageText.textContent = currentLanguage === 'sv' ? 'Svenska' : 'English';
     }
 
     // Update legend labels
