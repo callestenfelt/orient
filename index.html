@@ -19,9 +19,10 @@
 
     <!-- Split Layout Container -->
     <div id="app-container">
-        
-        <!-- Left Side: Map -->
-        <div id="map-section">
+        <!-- Mobile: Wrapper for sticky map + timeline -->
+        <div id="mobile-sticky-wrapper">
+            <!-- Left Side: Map -->
+            <div id="map-section">
             <div id="map"></div>
             
             <!-- Map Controls -->
@@ -82,9 +83,39 @@
                         <img src="gfx/minus.svg" alt="-">
                     </button>
                 </div>
+            </div><!-- End map-controls -->
+        </div><!-- End map-section -->
+
+        <!-- Timeline -->
+        <div id="timeline-container">
+                <div id="timeline-white-bg"></div>
+                <button id="prev-btn" class="timeline-nav-btn" aria-label="Previous event">
+                    <img src="gfx/angle.svg" alt="<">
+                </button>
+
+                <div id="timeline">
+                    <div id="timeline-month-labels"></div>
+                    <div id="timeline-year-pills"></div>
+                    <div id="timeline-track"></div>
+                    <div id="timeline-markers"></div>
+                    <div id="timeline-handle">
+                        <img src="gfx/pointer.svg" alt="Handle" draggable="false">
+                        <div id="timeline-tooltip" class="hidden">
+                            <div id="tooltip-date">JUNI 1946</div>
+                            <div id="tooltip-title">Pogromen i Kielce</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="next-btn" class="timeline-nav-btn" aria-label="Next event">
+                    <img src="gfx/angle.svg" alt=">" style="transform: scaleX(-1);">
+                </button>
+
+                <div id="timeline-overlay-left"></div>
+                <div id="timeline-overlay-right"></div>
             </div>
-        </div>
-        
+        </div><!-- End mobile-sticky-wrapper -->
+
         <!-- Right Side: Event Content -->
         <div id="content-section">
             <!-- Background gradient with event image -->
@@ -93,7 +124,7 @@
             <div id="event-content">
                 <div id="event-date-label">1946 JUNI</div>
                 <h1 id="event-title">NOVEMBERPOGROMEN</h1>
-                
+
                 <div id="event-body">
                     <div id="event-text"></div>
                     <div id="event-image-wrapper">
@@ -108,36 +139,7 @@
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Timeline (Bottom) -->
-    <div id="timeline-container">
-        <div id="timeline-white-bg"></div>
-        <button id="prev-btn" class="timeline-nav-btn" aria-label="Previous event">
-            <img src="gfx/angle.svg" alt="<">
-        </button>
-
-        <div id="timeline">
-            <div id="timeline-month-labels"></div>
-            <div id="timeline-year-pills"></div>
-            <div id="timeline-track"></div>
-            <div id="timeline-markers"></div>
-            <div id="timeline-handle">
-                <img src="gfx/pointer.svg" alt="Handle" draggable="false">
-                <div id="timeline-tooltip" class="hidden">
-                    <div id="tooltip-date">JUNI 1946</div>
-                    <div id="tooltip-title">Pogromen i Kielce</div>
-                </div>
-            </div>
-        </div>
-
-        <button id="next-btn" class="timeline-nav-btn" aria-label="Next event">
-            <img src="gfx/angle.svg" alt=">" style="transform: scaleX(-1);">
-        </button>
-
-        <div id="timeline-overlay-left"></div>
-        <div id="timeline-overlay-right"></div>
-    </div>
+    </div><!-- End app-container -->
 
     <!-- Information Overlay -->
     <div id="info-overlay" class="hidden">
