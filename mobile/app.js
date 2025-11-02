@@ -788,80 +788,54 @@ function getTimelinePosition(date) {
     return yearProgress * 100;
 }
 
-// Check if mobile view
-function isMobileView() {
-    return window.innerWidth <= 767;
-}
-
 // Create timeline markers for a specific year at a specific offset position
 function createTimelineMarkersForYear(container, year, offsetPercent, containerWidth) {
-    // Filter events for this year
+    const minDistance = 8; // Minimum distance in pixels
+    const markerPositions = []; // Track adjusted positions
+
+    // Filter events for this year and calculate positions
     const yearEvents = [];
     events.forEach((event, index) => {
         const eventYear = event.parsedDate.getFullYear();
         if (eventYear === year) {
-            yearEvents.push({ event, index });
+            const position = getTimelinePosition(event.parsedDate);
+            yearEvents.push({ event, index, position });
         }
     });
 
-    // On mobile, spread events evenly; on desktop, use date-based positioning
-    if (isMobileView()) {
-        // Mobile: Even spacing
-        yearEvents.forEach((item, i) => {
-            const evenPosition = (i / Math.max(1, yearEvents.length - 1)) * 100;
-            const position = yearEvents.length === 1 ? 50 : evenPosition;
+    // Adjust positions to maintain minimum distance
+    yearEvents.forEach((item, i) => {
+        let adjustedPosition = item.position;
+        const pixelPosition = (adjustedPosition / 100) * containerWidth;
 
-            const marker = document.createElement('div');
-            marker.className = 'timeline-marker';
-            marker.style.left = (offsetPercent + position) + '%';
-            marker.setAttribute('data-year', year);
-
-            if (item.index === currentEventIndex) {
-                marker.classList.add('active');
+        // Check against previous markers
+        for (let j = 0; j < markerPositions.length; j++) {
+            const prevPixelPos = (markerPositions[j] / 100) * containerWidth;
+            if (Math.abs(pixelPosition - prevPixelPos) < minDistance) {
+                // Adjust position to maintain minimum distance
+                const newPixelPos = prevPixelPos + minDistance;
+                adjustedPosition = (newPixelPos / containerWidth) * 100;
             }
+        }
 
-            marker.addEventListener('click', () => {
-                goToEvent(item.index);
-            });
+        markerPositions.push(adjustedPosition);
 
-            container.appendChild(marker);
+        // Create marker
+        const marker = document.createElement('div');
+        marker.className = 'timeline-marker';
+        marker.style.left = (offsetPercent + adjustedPosition) + '%';
+        marker.setAttribute('data-year', year);
+
+        if (item.index === currentEventIndex) {
+            marker.classList.add('active');
+        }
+
+        marker.addEventListener('click', () => {
+            goToEvent(item.index);
         });
-    } else {
-        // Desktop: Date-based positioning with collision detection
-        const minDistance = 8;
-        const markerPositions = [];
 
-        yearEvents.forEach((item, i) => {
-            let adjustedPosition = getTimelinePosition(item.event.parsedDate);
-            const pixelPosition = (adjustedPosition / 100) * containerWidth;
-
-            // Check against previous markers
-            for (let j = 0; j < markerPositions.length; j++) {
-                const prevPixelPos = (markerPositions[j] / 100) * containerWidth;
-                if (Math.abs(pixelPosition - prevPixelPos) < minDistance) {
-                    const newPixelPos = prevPixelPos + minDistance;
-                    adjustedPosition = (newPixelPos / containerWidth) * 100;
-                }
-            }
-
-            markerPositions.push(adjustedPosition);
-
-            const marker = document.createElement('div');
-            marker.className = 'timeline-marker';
-            marker.style.left = (offsetPercent + adjustedPosition) + '%';
-            marker.setAttribute('data-year', year);
-
-            if (item.index === currentEventIndex) {
-                marker.classList.add('active');
-            }
-
-            marker.addEventListener('click', () => {
-                goToEvent(item.index);
-            });
-
-            container.appendChild(marker);
-        });
-    }
+        container.appendChild(marker);
+    });
 }
 
 // Create timeline markers for previous, current, and next years
@@ -1017,12 +991,6 @@ function goToEvent(index, withYearSwitch = false, initialDrop = false) {
     const event = events[index];
     const eventYear = event.parsedDate.getFullYear();
 
-    // Reset content scroll position on mobile
-    const contentSection = document.getElementById('content-section');
-    if (contentSection) {
-        contentSection.scrollTop = 0;
-    }
-
     // Switch year if needed
     if (eventYear !== currentYear) {
         switchToYear(eventYear, !withYearSwitch);
@@ -1106,20 +1074,21 @@ function getDateFromTimelinePosition(percent) {
     return new Date(yearStart.getTime() + (yearDuration * yearProgress));
 }
 
-// Timeline dragging functionality with touch support
+// Timeline dragging functionality
 function initTimelineDragging() {
     const handle = document.getElementById('timeline-handle');
     const timeline = document.getElementById('timeline');
     const tooltip = document.getElementById('timeline-tooltip');
     let animationFrameId = null;
 
-    // Helper function to get client position from mouse or touch event
-    function getClientX(e) {
-        return e.touches ? e.touches[0].clientX : e.clientX;
-    }
+    handle.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        handle.classList.remove('animating');
+        tooltip.classList.remove('hidden');
+        e.preventDefault();
+    });
 
-    // Helper function to handle drag movement
-    function handleDragMove(clientX) {
+    document.addEventListener('mousemove', (e) => {
         if (!isDragging) return;
 
         // Use requestAnimationFrame for smooth updates
@@ -1130,7 +1099,7 @@ function initTimelineDragging() {
         animationFrameId = requestAnimationFrame(() => {
             // Recalculate timeline rect on each move for accuracy
             const timelineRect = timeline.getBoundingClientRect();
-            const x = clientX - timelineRect.left;
+            const x = e.clientX - timelineRect.left;
             const percent = Math.max(0, Math.min(1, x / timelineRect.width)) * 100;
 
             const currentTime = getDateFromTimelinePosition(percent);
@@ -1167,10 +1136,9 @@ function initTimelineDragging() {
                 }
             });
         });
-    }
+    });
 
-    // Helper function to handle drag end
-    function handleDragEnd() {
+    document.addEventListener('mouseup', () => {
         if (!isDragging) return;
         isDragging = false;
         tooltip.classList.add('hidden');
@@ -1196,44 +1164,6 @@ function initTimelineDragging() {
         });
 
         goToEvent(nearestIndex);
-    }
-
-    // Mouse events
-    handle.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        handle.classList.remove('animating');
-        tooltip.classList.remove('hidden');
-        e.preventDefault();
-    });
-
-    document.addEventListener('mousemove', (e) => {
-        handleDragMove(e.clientX);
-    });
-
-    document.addEventListener('mouseup', () => {
-        handleDragEnd();
-    });
-
-    // Touch events
-    handle.addEventListener('touchstart', (e) => {
-        isDragging = true;
-        handle.classList.remove('animating');
-        tooltip.classList.remove('hidden');
-        e.preventDefault();
-    }, { passive: false });
-
-    document.addEventListener('touchmove', (e) => {
-        if (isDragging && e.touches && e.touches.length > 0) {
-            handleDragMove(e.touches[0].clientX);
-        }
-    }, { passive: false });
-
-    document.addEventListener('touchend', () => {
-        handleDragEnd();
-    });
-
-    document.addEventListener('touchcancel', () => {
-        handleDragEnd();
     });
 }
 
@@ -1354,188 +1284,6 @@ map.on('styleimagemissing', (e) => {
     map.addImage(e.id, { width, height, data });
 });
 
-// Mobile legend toggle functionality
-function initMobileLegendToggle() {
-    const toggleBtn = document.getElementById('legend-toggle');
-    const legend = document.getElementById('map-legend');
-
-    // Check if we're on mobile
-    function isMobile() {
-        return window.innerWidth <= 767;
-    }
-
-    // Update legend visibility based on screen size
-    function updateLegendDisplay() {
-        if (isMobile()) {
-            toggleBtn.style.display = 'inline-flex';
-            legend.classList.add('collapsed');
-            toggleBtn.classList.remove('open');
-        } else {
-            toggleBtn.style.display = 'none';
-            legend.classList.remove('collapsed');
-            toggleBtn.classList.remove('open');
-        }
-    }
-
-    // Toggle legend on button click
-    toggleBtn.addEventListener('click', () => {
-        // Close year picker dropdown if open
-        const yearDropdown = document.getElementById('year-picker-dropdown');
-        const yearDisplay = document.getElementById('year-display');
-        if (yearDropdown && yearDisplay && !yearDropdown.classList.contains('collapsed')) {
-            yearDropdown.classList.add('collapsed');
-            yearDisplay.classList.remove('open');
-        }
-
-        legend.classList.toggle('collapsed');
-        toggleBtn.classList.toggle('open');
-    });
-
-    // Close legend when clicking outside
-    document.addEventListener('click', (e) => {
-        if (isMobile() &&
-            !legend.contains(e.target) &&
-            !toggleBtn.contains(e.target) &&
-            !legend.classList.contains('collapsed')) {
-            legend.classList.add('collapsed');
-            toggleBtn.classList.remove('open');
-        }
-    });
-
-    // Update on window resize
-    window.addEventListener('resize', updateLegendDisplay);
-
-    // Initial setup
-    updateLegendDisplay();
-}
-
-// Mobile year picker dropdown functionality
-function initMobileYearPicker() {
-    const yearDisplay = document.getElementById('year-display');
-    const yearDropdown = document.getElementById('year-picker-dropdown');
-
-    // Check if we're on mobile
-    function isMobile() {
-        return window.innerWidth <= 767;
-    }
-
-    // Populate year picker with years 1933-1948
-    function populateYearPicker() {
-        yearDropdown.innerHTML = '';
-        for (let year = 1933; year <= 1948; year++) {
-            const btn = document.createElement('button');
-            btn.className = 'year-picker-btn';
-            btn.textContent = year;
-            btn.setAttribute('data-year', year);
-
-            if (year === currentYear) {
-                btn.classList.add('active');
-            }
-
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                // Find first event for this year
-                const firstEventIndex = events.findIndex(event =>
-                    event.parsedDate.getFullYear() === year
-                );
-
-                if (firstEventIndex !== -1) {
-                    switchToYear(year, false, false, firstEventIndex);
-                } else {
-                    switchToYear(year, false, true);
-                }
-
-                // Close dropdown
-                yearDropdown.classList.add('collapsed');
-                yearDisplay.classList.remove('open');
-            });
-
-            yearDropdown.appendChild(btn);
-        }
-    }
-
-    // Toggle year picker on button click
-    yearDisplay.addEventListener('click', (e) => {
-        if (isMobile()) {
-            e.stopPropagation();
-
-            // Close legend dropdown if open
-            const legend = document.getElementById('map-legend');
-            const legendToggle = document.getElementById('legend-toggle');
-            if (legend && legendToggle && !legend.classList.contains('collapsed')) {
-                legend.classList.add('collapsed');
-                legendToggle.classList.remove('open');
-            }
-
-            yearDropdown.classList.toggle('collapsed');
-            yearDisplay.classList.toggle('open');
-
-            // Update active year button
-            const buttons = yearDropdown.querySelectorAll('.year-picker-btn');
-            buttons.forEach(btn => {
-                btn.classList.toggle('active', parseInt(btn.getAttribute('data-year')) === currentYear);
-            });
-        }
-    });
-
-    // Close year picker when clicking outside
-    document.addEventListener('click', (e) => {
-        if (isMobile() &&
-            !yearDropdown.contains(e.target) &&
-            !yearDisplay.contains(e.target) &&
-            !yearDropdown.classList.contains('collapsed')) {
-            yearDropdown.classList.add('collapsed');
-            yearDisplay.classList.remove('open');
-        }
-    });
-
-    // Initial setup
-    if (isMobile()) {
-        populateYearPicker();
-    }
-
-    // Update on window resize
-    window.addEventListener('resize', () => {
-        if (isMobile()) {
-            populateYearPicker();
-        }
-    });
-}
-
-// Re-render timeline markers on window resize (mobile vs desktop)
-window.addEventListener('resize', () => {
-    createTimelineMarkers();
-});
-
-// Mobile hamburger menu setup
-function initMobileHamburgerMenu() {
-    const hamburgerMenu = document.getElementById('content-top-controls');
-
-    if (!hamburgerMenu) return;
-
-    // Check if we're on mobile
-    function isMobile() {
-        return window.innerWidth <= 767;
-    }
-
-    // Update hamburger menu visibility based on screen size
-    function updateHamburgerDisplay() {
-        const mobile = isMobile();
-
-        if (mobile) {
-            hamburgerMenu.classList.add('mobile-menu', 'show');
-        } else {
-            hamburgerMenu.classList.remove('mobile-menu', 'show');
-        }
-    }
-
-    // Update on window resize
-    window.addEventListener('resize', updateHamburgerDisplay);
-
-    // Initial setup
-    updateHamburgerDisplay();
-}
-
 // Initialize when map is loaded
 map.on('load', async () => {
     // Load translations first
@@ -1562,8 +1310,6 @@ map.on('load', async () => {
     createTimelineMarkers();
     initTimelineDragging();
     initIdleDetection();
-    initMobileLegendToggle(); // Initialize mobile legend toggle
-    initMobileYearPicker(); // Initialize mobile year picker
 
     // Hide handle initially, then drop it in
     const handle = document.getElementById('timeline-handle');
@@ -1575,11 +1321,6 @@ map.on('load', async () => {
     setTimeout(() => {
         const loadingScreen = document.getElementById('loading-screen');
         loadingScreen.classList.add('fade-out');
-
-        // Show mobile hamburger menu after loading completes
-        setTimeout(() => {
-            initMobileHamburgerMenu();
-        }, 300); // Wait for loading screen fade animation
     }, 500);
 });
 
@@ -1611,15 +1352,6 @@ function updateUITexts() {
     const helpBtnSpan = document.querySelector('#help-btn span');
     if (helpBtnSpan) {
         helpBtnSpan.textContent = t('ui.buttons.information');
-    }
-
-    // Update legend toggle button text
-    const legendToggleSpan = document.querySelector('#legend-toggle span');
-    if (legendToggleSpan) {
-        const text = currentLanguage === 'sv' ? legendToggleSpan.getAttribute('data-sv') : legendToggleSpan.getAttribute('data-en');
-        if (text) {
-            legendToggleSpan.textContent = text;
-        }
     }
 
     // Update info overlay content
