@@ -1361,7 +1361,7 @@ function initMobileLegendToggle() {
 
     // Check if we're on mobile
     function isMobile() {
-        return window.innerWidth <= 767;
+        return window.innerWidth < 1920;
     }
 
     // Update legend visibility based on screen size
