@@ -2701,6 +2701,7 @@ body {
         max-width: none;
         top: 60px;
         padding: 15px;
+        z-index: 7000;
     }
 
     .legend-grid {
