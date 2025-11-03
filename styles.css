@@ -329,12 +329,15 @@ body {
     z-index: 2;
     padding: 100px 40px 40px 40px;
     color: var(--text-color-header);
-    transition: opacity 0.3s ease;
     background: #1F2A44;
     min-height: calc(100vh - var(--timeline-height));
 }
 
-#event-content.fade-out {
+#event-content-inner {
+    transition: opacity 0.3s ease;
+}
+
+#event-content-inner.fade-out {
     opacity: 0;
 }
 #event-date-label {

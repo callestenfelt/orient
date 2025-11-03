@@ -596,7 +596,7 @@ function showTerritoryInfo(territoryType) {
 
     isShowingTerritoryInfo = true;
 
-    const contentEl = document.getElementById('event-content');
+    const contentEl = document.getElementById('event-content-inner');
     const bgEl = document.getElementById('content-background');
 
     // Fade out
@@ -669,7 +669,7 @@ function createEventMarkers() {
 
 // Update event content panel
 function updateEventContent(event) {
-    const contentEl = document.getElementById('event-content');
+    const contentEl = document.getElementById('event-content-inner');
     const bgEl = document.getElementById('content-background');
 
     // Fade out
