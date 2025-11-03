@@ -1891,6 +1891,69 @@ body {
    RESPONSIVE BREAKPOINTS - MOBILE ADAPTATION
    ============================================ */
 
+/* Tablet/Small Desktop (768px - 1419px) */
+@media (max-width: 1419px) and (min-width: 768px) {
+    /* Make legend collapsible - hidden by default */
+    #map-legend {
+        display: none;
+        position: fixed;
+        top: 70px;
+        left: 20px;
+        width: auto;
+        max-width: 400px;
+        max-height: 60vh;
+        overflow-y: auto;
+        z-index: 7000;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        border-radius: 12px;
+        background: var(--color-white);
+        padding: 15px;
+    }
+
+    #map-legend.collapsed {
+        display: none;
+    }
+
+    #map-legend:not(.collapsed) {
+        display: block;
+    }
+
+    #legend-toggle {
+        font-size: 12px;
+        padding: 9px 16px;
+        border-radius: 18px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.95);
+        border: none;
+        font-weight: 600;
+        color: var(--color-black);
+        cursor: pointer;
+        box-shadow: 0 0 40px -10px rgba(0,0,0,0.3),
+                    0 0 25px -15px rgba(0,0,0,0.2);
+        position: relative;
+        transition: all 0.2s ease;
+    }
+
+    #legend-toggle::after {
+        content: '';
+        display: inline-block;
+        width: 9px;
+        height: 9px;
+        background-image: url('gfx/angle.svg');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        transform: rotate(-90deg);
+        transition: transform 0.3s ease;
+    }
+
+    #legend-toggle.open::after {
+        transform: rotate(90deg);
+    }
+}
+
 /* Large Desktop (1420px - 1919px) */
 @media (max-width: 1919px) and (min-width: 1420px) {
     /* Make legend collapsible - hidden by default */
